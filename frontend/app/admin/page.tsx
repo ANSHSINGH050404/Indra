@@ -4,13 +4,15 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { toast } from "sonner";
 
 export default function AdminDashboard() {
-  const { user, isLoggedIn } = useAuth();
+  const { user, isLoggedIn, refreshUser } = useAuth();
   const router = useRouter();
   
   const [markets, setMarkets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authChecking, setAuthChecking] = useState(true);
   
   // Create Market State
   const [title, setTitle] = useState("");
@@ -20,12 +22,24 @@ export default function AdminDashboard() {
   const [imageUrl, setImageUrl] = useState("");
 
   useEffect(() => {
-    if (!isLoggedIn) {
-      router.push("/auth/login");
-    } else if (user && !user.isAdmin) {
-      router.push("/");
+    const checkAuth = async () => {
+      if (!user && localStorage.getItem("token")) {
+        await refreshUser();
+      }
+      setAuthChecking(false);
+    };
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    if (!authChecking) {
+      if (!isLoggedIn) {
+        router.push("/auth/login");
+      } else if (user && !user.isAdmin) {
+        router.push("/");
+      }
     }
-  }, [isLoggedIn, user, router]);
+  }, [isLoggedIn, user, router, authChecking]);
 
   useEffect(() => {
     if (user?.isAdmin) {
@@ -58,12 +72,12 @@ export default function AdminDashboard() {
           { title: "No", price: 50 }
         ]
       });
-      alert("Market created successfully!");
+      toast.success("Market created successfully!");
       setTitle("");
       setDescription("");
       fetchMarkets();
     } catch (err: any) {
-      alert("Failed to create market: " + err.response?.data?.message || err.message);
+      toast.error("Failed to create market: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -72,14 +86,34 @@ export default function AdminDashboard() {
     
     try {
       await api.post("/api/admin/markets/resolve", { marketId, winningOutcomeId });
-      alert("Market resolved!");
+      toast.success("Market resolved!");
       fetchMarkets();
     } catch (err: any) {
-      alert("Failed to resolve market: " + err.response?.data?.message || err.message);
+      toast.error("Failed to resolve market: " + (err.response?.data?.message || err.message));
     }
   };
 
-  if (!user?.isAdmin) return null;
+  const handleDelete = async (marketId: string) => {
+    if (!confirm("Are you sure you want to delete this market? This will remove all associated data.")) return;
+    
+    try {
+      await api.delete(`/api/admin/markets/${marketId}`);
+      toast.success("Market deleted!");
+      fetchMarkets();
+    } catch (err: any) {
+      toast.error("Failed to delete market: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  if (authChecking || !user?.isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#080a10] flex items-center justify-center">
+        <div className="text-zinc-500 animate-pulse font-bold tracking-widest uppercase">
+          Verifying Admin Access...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#080a10] text-white p-6 md:p-12">
@@ -158,20 +192,38 @@ export default function AdminDashboard() {
           <section>
             <h2 className="text-xl font-bold mb-6">Manage Markets</h2>
             <div className="space-y-4">
-              {loading ? <p>Loading...</p> : markets.filter(m => m.status === 'active').map((market) => (
+              {loading ? <p>Loading...</p> : markets.map((market) => (
                 <div key={market.id} className="bg-[#111318] p-6 rounded-2xl border border-white/5">
-                  <h3 className="font-bold mb-4">{market.title}</h3>
-                  <div className="flex gap-2">
-                    {market.outcomes.map((outcome: any) => (
-                      <button
-                        key={outcome.id}
-                        onClick={() => handleResolve(market.id, outcome.id)}
-                        className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold hover:bg-white/10 hover:border-lime-400/50 transition-all"
-                      >
-                        Resolve {outcome.title}
-                      </button>
-                    ))}
+                  <div className="flex justify-between items-start mb-4">
+                    <h3 className="font-bold">{market.title}</h3>
+                    <button 
+                      onClick={() => handleDelete(market.id)}
+                      className="text-zinc-500 hover:text-red-400 transition-colors p-1"
+                      title="Delete Market"
+                    >
+                      <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path d="M3 6h18m-2 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                      </svg>
+                    </button>
                   </div>
+                  
+                  {market.status === 'active' ? (
+                    <div className="flex gap-2">
+                      {market.outcomes.map((outcome: any) => (
+                        <button
+                          key={outcome.id}
+                          onClick={() => handleResolve(market.id, outcome.id)}
+                          className="flex-1 py-2 rounded-lg bg-white/5 border border-white/10 text-[10px] font-black uppercase hover:bg-white/10 hover:border-lime-400/50 transition-all"
+                        >
+                          Resolve {outcome.title}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs font-bold text-lime-400 uppercase tracking-widest bg-lime-400/10 py-2 rounded-lg text-center">
+                      Resolved
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

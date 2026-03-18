@@ -90,3 +90,26 @@ export const resolveMarketAdmin = async (req: any, res: Response) => {
     res.status(400).json({ message: error.message || "Failed to resolve market" });
   }
 };
+
+export const deleteMarketAdmin = async (req: Request, res: Response) => {
+  const marketId = req.params.id as string;
+
+  try {
+    await db.transaction(async (tx) => {
+      // 1. Delete associated outcomes first
+      await tx.delete(outcomesTable).where(eq(outcomesTable.marketId, marketId));
+      
+      // 2. Delete the market
+      const result = await tx.delete(marketsTable).where(eq(marketsTable.id, marketId)).returning();
+      
+      if (result.length === 0) {
+        throw new Error("Market not found");
+      }
+    });
+
+    res.status(200).json({ message: "Market deleted successfully" });
+  } catch (error: any) {
+    console.error("Error deleting market:", error);
+    res.status(400).json({ message: error.message || "Failed to delete market" });
+  }
+};

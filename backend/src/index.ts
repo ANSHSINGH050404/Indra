@@ -34,7 +34,7 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
 }));
 app.use(morgan("dev"));
-const PORT = 8000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 8000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

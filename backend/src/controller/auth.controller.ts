@@ -33,7 +33,7 @@ export const registerUser = async (req: express.Request, res: express.Response) 
 
   const userId=(await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email)).limit(1))[0].id;
 
-  return res.status(201).json({ message: "User registered successfully", token,Id: userId });
+  return res.status(201).json({ message: "User registered successfully", token,Id: userId,fullname });
 
 }
 
@@ -61,7 +61,7 @@ export const loginUser = async (req: express.Request, res: express.Response) => 
     const userId=(await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email)).limit(1))[0].id;
     const token = jwt.sign({ email }, process.env.JWT_SECRET!, { expiresIn: '10h' });
 
-    return res.status(200).json({ message: "Login successful", token ,id: userId});
+    return res.status(200).json({ message: "Login successful", token ,id: userId,fullname: user.fullname});
 
 }
 

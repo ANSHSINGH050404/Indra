@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, ReactNode } from "react";
-import {api} from "@/lib/api";
+import React, { useState, ReactNode, useEffect } from "react";
 import { registerUser } from "@/services/auth";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const EyeOpen = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
@@ -73,6 +74,8 @@ function Field({ label, error, children }: FieldProps) {
 }
 
 export default function RegisterPage() {
+  const router = useRouter();
+  const { setIsLoggedIn } = useAuth();
   const [form, setForm]       = useState({ name: "", email: "", password: "" });
   const [errors, setErrors]   = useState<Record<string, string | undefined>>({});
   const [showPw, setShowPw]   = useState(false);
@@ -102,10 +105,26 @@ export default function RegisterPage() {
     setErrors(e);
     if (Object.keys(e).length > 0) return;
     setLoading(true);
-    await registerUser(form.name, form.email, form.password);
-    setLoading(false);
-    setDone(true);
+    try {
+      const data = await registerUser(form.name, form.email, form.password);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("fullname", data.fullname);
+      setIsLoggedIn(true);
+      setLoading(false);
+      setDone(true);
+      router.push("/");
+    } catch (err: any) {
+      setLoading(false);
+      setErrors({ form: err.response?.data?.message || "Registration failed" });
+    }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
 
   
 
@@ -286,7 +305,12 @@ export default function RegisterPage() {
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
               <p className="text-center text-sm text-zinc-500">
-                <a href="#" className="text-lime-400 font-medium hover:underline">Sign in instead</a>
+                <button
+                  onClick={() => router.push("/auth/login")}
+                  className="text-lime-400 font-medium hover:underline"
+                >
+                  Sign in instead
+                </button>
               </p>
             </>
           )}

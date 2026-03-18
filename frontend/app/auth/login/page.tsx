@@ -1,7 +1,9 @@
 'use client';
 
-import React, { useState, ReactNode } from "react";
+import React, { useState, ReactNode, useEffect } from "react";
 import { loginUser } from "@/services/auth";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 const EyeOpen = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
@@ -46,11 +48,14 @@ function Field({ label, error, children }: FieldProps) {
 }
 
 export default function LoginPage() {
+  const router = useRouter();
+  const { setIsLoggedIn } = useAuth();
   const [form, setForm]       = useState({ email: "", password: "" });
   const [errors, setErrors]   = useState<Record<string, string | undefined>>({});
   const [showPw, setShowPw]   = useState(false);
   const [loading, setLoading] = useState(false);
   const [done, setDone]       = useState(false);
+  
 
   const set = (k: string) => (v: string) => {
     setForm(f => ({ ...f, [k]: v }));
@@ -70,7 +75,11 @@ export default function LoginPage() {
     if (Object.keys(e).length > 0) return;
     setLoading(true);
     try {
-      await loginUser(form.email, form.password);
+      const data = await loginUser(form.email, form.password);
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("fullname", data.fullname);
+      setIsLoggedIn(true);
+      router.push("/");
       setLoading(false);
       setDone(true);
     } catch (err: any) {
@@ -78,6 +87,13 @@ export default function LoginPage() {
       setErrors({ form: err.response?.data?.message || "Invalid credentials" });
     }
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      router.push("/");
+    }
+  }, [router]);
 
   const inputClass = (field: string) =>
     `w-full bg-white/[0.04] border rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-zinc-600 outline-none transition-all duration-200 ` +
@@ -209,7 +225,12 @@ export default function LoginPage() {
                 <div className="flex-1 h-px bg-white/[0.06]" />
               </div>
               <p className="text-center text-sm text-zinc-500">
-                <a href="#" className="text-lime-400 font-medium hover:underline">Create an account instead</a>
+                <button
+                  onClick={() => router.push("/auth/register")}
+                  className="text-lime-400 font-medium hover:underline"
+                >
+                  Create an account instead
+                </button>
               </p>
             </>
           )}

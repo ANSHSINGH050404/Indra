@@ -3,7 +3,6 @@
 import MarketCard from "@/components/card";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
-import { log } from "console";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -25,7 +24,7 @@ export default function Home() {
 
     const fetchMarkets = async () => {
       try {
-        const response = await api.get("/api/markets/");
+        const response = await api.get("/api/markets");
         const data = response.data;
         console.log("Fetched markets:", data);
         setMarkets(data);

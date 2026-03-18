@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { db } from "../db/index";
-import { marketsTable, outcomesTable, marketResolutionsTable } from "../db/schema";
-import { eq } from "drizzle-orm";
+import { marketsTable, outcomesTable, marketResolutionsTable, positionsTable, usersTable, transactionsTable } from "../db/schema";
+import { and, eq, gt, sql } from "drizzle-orm";
 import crypto from "crypto";
 
 export const createMarketAdmin = async (req: any, res: Response) => {
@@ -56,7 +56,7 @@ export const resolveMarketAdmin = async (req: any, res: Response) => {
   }
 
   try {
-    await db.transaction(async (tx) => {
+    const result = await db.transaction(async (tx) => {
       // 1. Check if market exists and is active
       const market = await tx.query.marketsTable.findFirst({
         where: eq(marketsTable.id, marketId),
@@ -64,6 +64,15 @@ export const resolveMarketAdmin = async (req: any, res: Response) => {
 
       if (!market || market.status !== "active") {
         throw new Error("Market not found or already resolved");
+      }
+
+      // 1.1 Validate that the winning outcome belongs to this market
+      const winningOutcome = await tx.query.outcomesTable.findFirst({
+        where: and(eq(outcomesTable.id, winningOutcomeId), eq(outcomesTable.marketId, marketId)),
+      });
+
+      if (!winningOutcome) {
+        throw new Error("Invalid winning outcome for this market");
       }
 
       // 2. Update Market Status
@@ -81,10 +90,49 @@ export const resolveMarketAdmin = async (req: any, res: Response) => {
         winningOutcomeId,
       });
       
-      // TODO: Implement actual payout logic here in next step
+      // 4. Payout: positions.shares are stored as 1/100th contracts; 1 share pays 1 point on win.
+      const winnerPayouts = await tx
+        .select({
+          userId: positionsTable.userId,
+          shares: sql<number>`sum(${positionsTable.shares})`.as("shares"),
+        })
+        .from(positionsTable)
+        .where(and(eq(positionsTable.outcomeId, winningOutcomeId), gt(positionsTable.shares, 0)))
+        .groupBy(positionsTable.userId);
+
+      let totalPayout = 0;
+      for (const payout of winnerPayouts) {
+        const payoutAmount = Number(payout.shares) || 0;
+        if (payoutAmount <= 0) continue;
+
+        totalPayout += payoutAmount;
+
+        await tx
+          .update(usersTable)
+          .set({ points: sql`${usersTable.points} + ${payoutAmount}` })
+          .where(eq(usersTable.id, payout.userId));
+
+        await tx.insert(transactionsTable).values({
+          userId: payout.userId,
+          type: "PAYOUT",
+          amount: payoutAmount,
+          metadata: JSON.stringify({
+            marketId,
+            winningOutcomeId,
+            shares: payoutAmount,
+          }),
+        });
+      }
+
+      return {
+        marketId,
+        winningOutcomeId,
+        winnersPaid: winnerPayouts.length,
+        totalPayout,
+      };
     });
 
-    res.status(200).json({ message: "Market resolved successfully" });
+    res.status(200).json({ message: "Market resolved successfully", ...result });
   } catch (error: any) {
     console.error("Error resolving market:", error);
     res.status(400).json({ message: error.message || "Failed to resolve market" });

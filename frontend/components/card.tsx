@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -131,15 +132,15 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
         </div>
 
         {/* Emoji + Title */}
-        <div className="flex items-start gap-3">
+        <Link href={`/markets/${market.slug}`} className="group/link flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-white/[0.05] border border-white/[0.07]
-            flex items-center justify-center text-xl flex-shrink-0 select-none">
+            flex items-center justify-center text-xl flex-shrink-0 select-none group-hover/link:border-lime-400/30 transition-colors">
             {meta.emoji}
           </div>
-          <h2 className="text-white font-bold text-[15px] leading-snug tracking-tight line-clamp-2">
+          <h2 className="text-white font-bold text-[15px] leading-snug tracking-tight line-clamp-2 group-hover/link:text-lime-400 transition-colors">
             {market.title}
           </h2>
-        </div>
+        </Link>
 
         {/* Description */}
         <p className="text-zinc-500 text-[12px] leading-relaxed line-clamp-2">

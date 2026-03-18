@@ -102,7 +102,7 @@ export default function Navbar() {
                  </button>
                  <div className="flex flex-col items-end">
                     <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Balance</span>
-                    <span className="text-sm font-bold text-white">$0.00</span>
+                    <span className="text-sm font-bold text-white">₹0.00</span>
                  </div>
               </div>
 

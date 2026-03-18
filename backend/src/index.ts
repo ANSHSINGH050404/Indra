@@ -5,14 +5,16 @@ import dotenv from "dotenv";
 import authRouter from "./router/auth.route";
 import morgan from "morgan";
 dotenv.config();
+import cors from "cors";
 
 const sql = neon(process.env.DATABASE_URL!);
 const db = drizzle({ client: sql });
 
 const app = express();
-const PORT = 3000;
-
+app.use(cors());
 app.use(morgan("dev"));
+const PORT = 8000;
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

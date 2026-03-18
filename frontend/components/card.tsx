@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
+import { createTrade } from "@/services/trade";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -93,12 +94,37 @@ interface MarketCardProps {
 export default function MarketCard({ market, yesProbability }: MarketCardProps) {
   const [pick, setPick]   = useState<"yes" | "no" | null>(null);
   const [saved, setSaved] = useState(false);
+  const [amount, setAmount] = useState<number>(100);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
 
   if (!market) return null;
 
   const meta = CATEGORY_META[market.category] ?? CATEGORY_META.default;
-  const yesP = yesProbability ?? market.outcomes?.find(o => o.title === "YES")?.price ?? 50;
+  const yesOutcome = market.outcomes?.find(o => o.title === "YES");
+  const noOutcome = market.outcomes?.find(o => o.title === "NO");
+  const yesP = yesProbability ?? yesOutcome?.price ?? 50;
   const noP  = 100 - yesP;
+
+  const handleTrade = async () => {
+    const outcome = pick === "yes" ? yesOutcome : noOutcome;
+    if (!outcome) return;
+
+    setLoading(true);
+    setStatus(null);
+    try {
+      await createTrade(outcome.id, amount, "BUY");
+      setStatus({ type: "success", msg: "Trade executed!" });
+      setTimeout(() => setStatus(null), 3000);
+    } catch (err: any) {
+      setStatus({ 
+        type: "error", 
+        msg: err.response?.data?.message || "Trade failed" 
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="relative bg-[#111318] border border-white/[0.07] rounded-2xl overflow-hidden
@@ -207,14 +233,34 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
 
         {/* Conditional Buy CTA */}
         {pick && (
-          <button
-            className={`w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-150
-              ${pick === "yes"
-                ? "bg-emerald-500 hover:bg-emerald-400 text-zinc-900"
-                : "bg-red-500 hover:bg-red-400 text-white"}`}
-          >
-            Buy {pick === "yes" ? "YES" : "NO"} @ ₹{pick === "yes" ? yesP : noP}
-          </button>
+          <div className="flex flex-col gap-3 mt-2 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-sm">₹</span>
+              <input
+                type="number"
+                value={amount}
+                onChange={(e) => setAmount(Number(e.target.value))}
+                className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-7 pr-4 text-sm text-white focus:outline-none focus:border-lime-400/50"
+                placeholder="Amount"
+              />
+            </div>
+            <button
+              onClick={handleTrade}
+              disabled={loading || amount <= 0}
+              className={`w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-150
+                ${pick === "yes"
+                  ? "bg-emerald-500 hover:bg-emerald-400 text-zinc-900"
+                  : "bg-red-500 hover:bg-red-400 text-white"}
+                disabled:opacity-50 disabled:cursor-not-allowed`}
+            >
+              {loading ? "Processing..." : `Buy ${pick === "yes" ? "YES" : "NO"} @ ₹${pick === "yes" ? yesP : noP}`}
+            </button>
+            {status && (
+              <p className={`text-center text-[11px] font-medium ${status.type === "success" ? "text-emerald-400" : "text-red-400"}`}>
+                {status.msg}
+              </p>
+            )}
+          </div>
         )}
       </div>
 

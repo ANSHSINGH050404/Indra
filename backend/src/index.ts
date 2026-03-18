@@ -5,6 +5,7 @@ import authRouter from "./router/auth.route";
 import morgan from "morgan";
 dotenv.config();
 import cors from "cors";
+import marketRouter from "./router/market.route";
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/auth", authRouter);
+app.use("/api", marketRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

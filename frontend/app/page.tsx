@@ -1,8 +1,9 @@
 "use client";
 
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { use, useEffect, useState } from "react";
 
 const markets = [
   {
@@ -31,6 +32,7 @@ const markets = [
 export default function Home() {
   const { isLoggedIn } = useAuth();
   const router = useRouter();
+  const [markets, setMarkets] = useState([]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -41,7 +43,21 @@ export default function Home() {
   if (!isLoggedIn) return null;
 
   const fullname = typeof window !== "undefined" ? localStorage.getItem("fullname") : "";
+ 
 
+  // useEffect(() => {
+  //   try {
+  //     const fetchMarkets = async () => {
+  //       const response = await api.get("/api/markets/");
+  //       const data = await response.data;
+  //       setMarkets(data.markets);
+  //     };
+  //     fetchMarkets();
+  //   } catch (error) {
+  //     console.error("Error fetching markets:", error);
+      
+  //   }
+  // }, []);
   return (
     <div className="min-h-screen bg-[#080a10] text-white p-6 md:p-12">
       <div className="max-w-6xl mx-auto pt-8">

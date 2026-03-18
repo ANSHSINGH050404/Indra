@@ -109,3 +109,17 @@ export const marketResolutionsTable = pgTable("market_resolutions", {
 
   resolvedAt: timestamp("resolved_at").defaultNow().notNull(),
 });
+
+// ─── RELATIONS ───────────────────────────────────────────────────────────────
+import { relations } from "drizzle-orm";
+
+export const marketsRelations = relations(marketsTable, ({ many }) => ({
+  outcomes: many(outcomesTable),
+}));
+
+export const outcomesRelations = relations(outcomesTable, ({ one }) => ({
+  market: one(marketsTable, {
+    fields: [outcomesTable.marketId],
+    references: [marketsTable.id],
+  }),
+}));

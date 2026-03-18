@@ -108,6 +108,13 @@ export const executeTrade = async (
 export const getTradesByUser = async (userId: number) => {
   const trades = await db.query.tradesTable.findMany({
     where: eq(tradesTable.userId, userId),
+    with: {
+      outcome: {
+        with: {
+          market: true,
+        },
+      },
+    },
     orderBy: sql`${tradesTable.createdAt} DESC`,
   });
 

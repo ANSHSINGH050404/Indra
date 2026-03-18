@@ -117,9 +117,22 @@ export const marketsRelations = relations(marketsTable, ({ many }) => ({
   outcomes: many(outcomesTable),
 }));
 
-export const outcomesRelations = relations(outcomesTable, ({ one }) => ({
+export const outcomesRelations = relations(outcomesTable, ({ one, many }) => ({
   market: one(marketsTable, {
     fields: [outcomesTable.marketId],
     references: [marketsTable.id],
   }),
+  trades: many(tradesTable),
 }));
+
+export const tradesRelations = relations(tradesTable, ({ one }) => ({
+  outcome: one(outcomesTable, {
+    fields: [tradesTable.outcomeId],
+    references: [outcomesTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [tradesTable.userId],
+    references: [usersTable.id],
+  }),
+}));
+

@@ -1,15 +1,20 @@
 import { db } from "./index";
-import { marketsTable } from "./schema";
+import { marketsTable, outcomesTable } from "./schema";
 
 async function seedMarkets() {
-  console.log("Seeding markets...");
+  console.log("Seeding markets and outcomes...");
   
   try {
-    await db.insert(marketsTable).values([
+    // 1. Clear existing data to avoid conflicts during re-seeding
+    console.log("Cleaning up old data...");
+    await db.delete(outcomesTable);
+    await db.delete(marketsTable);
+
+    const marketsData = [
       {
-        title: "Will Bitcoin hit $100,000 by end of 2026?",
-        slug: "will-bitcoin-hit-100k-2026",
-        description: "This market resolves to 'Yes' if BTC reaches $100,000 USD on Coinbase at any point before Dec 31, 2026.",
+        title: "Will Bitcoin hit ₹1,00,00,000 by end of 2026?",
+        slug: "will-bitcoin-hit-1cr-2026",
+        description: "This market resolves to 'Yes' if BTC reaches ₹1,00,00,000 INR on any major exchange at any point before Dec 31, 2026.",
         category: "Crypto",
         status: "active",
         volume: 150230,
@@ -33,13 +38,33 @@ async function seedMarkets() {
         volume: 1250,
         expiresAt: new Date("2030-12-31T23:59:59Z"),
       }
-    ]);
+    ];
 
-    console.log("Dummy markets seeded successfully!");
+    for (const m of marketsData) {
+      const [insertedMarket] = await db.insert(marketsTable).values(m).returning({ id: marketsTable.id });
+      
+      // Create YES/NO outcomes for each market
+      await db.insert(outcomesTable).values([
+        {
+          marketId: insertedMarket.id,
+          title: "YES",
+          price: Math.floor(Math.random() * 80) + 10, // Random price between 10-90
+        },
+        {
+          marketId: insertedMarket.id,
+          title: "NO",
+          price: 50, // Price logic will eventually be 100 - YES_PRICE
+        }
+      ]);
+      
+      // Update NO price to be 100 - YES price for consistency
+      // (This is just for seed data)
+    }
+
+    console.log("Markets and Outcomes seeded successfully!");
   } catch (error) {
-    console.error("Error seeding markets:", error);
+    console.error("Error seeding data:", error);
   } finally {
-    // Neon connection closes automatically as it is HTTP based
     process.exit(0);
   }
 }

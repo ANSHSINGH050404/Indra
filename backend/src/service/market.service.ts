@@ -3,11 +3,20 @@ import { marketsTable } from "../db/schema";
 import { eq } from "drizzle-orm";
 
 export const getAllMarketsdata = async () => {
-  const data = await db.select().from(marketsTable);
+  const data = await db.query.marketsTable.findMany({
+    with: {
+      outcomes: true,
+    },
+  });
   return data;
 };
 
 export const getMarketBySlugData = async (slug: string) => {
-  const data = await db.select().from(marketsTable).where(eq(marketsTable.slug, slug)).limit(1);
-  return data[0];
+  const data = await db.query.marketsTable.findFirst({
+    where: eq(marketsTable.slug, slug),
+    with: {
+      outcomes: true,
+    },
+  });
+  return data;
 };

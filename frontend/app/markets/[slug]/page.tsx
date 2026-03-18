@@ -79,14 +79,16 @@ export default function MarketDetailPage() {
             {market.description}
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900 font-black py-4 rounded-2xl transition-all active:scale-95 text-lg">
-              Buy YES
-            </button>
-            <button className="bg-red-500 hover:bg-red-400 text-white font-black py-4 rounded-2xl transition-all active:scale-95 text-lg">
-              Buy NO
-            </button>
-          </div>
+          {market.outcomes && market.outcomes.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button className="bg-emerald-500 hover:bg-emerald-400 text-zinc-900 font-black py-4 rounded-2xl transition-all active:scale-95 text-lg">
+                Buy YES @ ₹{market.outcomes.find(o => o.title === "YES")?.price}
+              </button>
+              <button className="bg-red-500 hover:bg-red-400 text-white font-black py-4 rounded-2xl transition-all active:scale-95 text-lg">
+                Buy NO @ ₹{market.outcomes.find(o => o.title === "NO")?.price}
+              </button>
+            </div>
+          )}
 
           <div className="mt-12 pt-12 border-t border-white/5 flex flex-wrap gap-8">
              <div>

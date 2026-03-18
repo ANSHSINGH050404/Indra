@@ -3,6 +3,15 @@ import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface Outcome {
+  id: string;
+  marketId: string;
+  title: string;
+  price: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Market {
   id: string;
   title: string;
@@ -17,6 +26,7 @@ export interface Market {
   createdBy: string | null;
   createdAt: string;
   updatedAt: string;
+  outcomes?: Outcome[];
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -27,13 +37,6 @@ const CATEGORY_META: Record<string, { bg: string; text: string; dot: string; emo
   Science:  { bg: "bg-violet-500/15", text: "text-violet-400", dot: "bg-violet-400", emoji: "🚀" },
   Politics: { bg: "bg-rose-500/15",   text: "text-rose-400",   dot: "bg-rose-400",   emoji: "🏛️" },
   default:  { bg: "bg-zinc-500/15",   text: "text-zinc-400",   dot: "bg-zinc-400",   emoji: "📊" },
-};
-
-// Seeded yes-probability — replace with real API data as needed
-const SEED_PROB: Record<string, number> = {
-  "25c7e6c3-27fc-4fc9-acf4-f836bd848b20": 68,
-  "c2e8012d-c5a3-437f-9bc8-4fb9d875ed1d": 34,
-  "37ce2975-2aa7-4d1b-b0e4-71965245aad8": 19,
 };
 
 function formatVolume(v: number): string {
@@ -94,7 +97,7 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
   if (!market) return null;
 
   const meta = CATEGORY_META[market.category] ?? CATEGORY_META.default;
-  const yesP = yesProbability ?? SEED_PROB[market.id] ?? 50;
+  const yesP = yesProbability ?? market.outcomes?.find(o => o.title === "YES")?.price ?? 50;
   const noP  = 100 - yesP;
 
   return (

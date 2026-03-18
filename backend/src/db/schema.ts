@@ -46,7 +46,7 @@ export const marketsTable = pgTable("markets", {
 
   expiresAt: timestamp("expires_at").notNull(),
 
-  createdBy: uuid("created_by"), // Removed reference temporarily if types mismatch
+  createdBy: integer("created_by"), // Removed reference temporarily if types mismatch
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -66,10 +66,10 @@ export const outcomesTable = pgTable("outcomes", {
 // ─── TRADES ──────────────────────────────────────────────────────────────────
 export const tradesTable = pgTable("trades", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
-  userId: uuid("user_id").notNull(),
+  userId: integer("user_id").notNull(),
   outcomeId: uuid("outcome_id").notNull(),
 
-  type: varchar("type", { length: 50 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), 
   amount: integer("amount").notNull(),
   shares: integer("shares").notNull(),
   priceAtPurchase: integer("price_at_purchase").notNull(),
@@ -80,7 +80,7 @@ export const tradesTable = pgTable("trades", {
 // ─── POSITIONS ───────────────────────────────────────────────────────────────
 export const positionsTable = pgTable("positions", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
-  userId: uuid("user_id").notNull(),
+  userId: integer("user_id").notNull(),
   outcomeId: uuid("outcome_id").notNull(),
 
   shares: integer("shares").default(0).notNull(),
@@ -91,9 +91,9 @@ export const positionsTable = pgTable("positions", {
 // ─── TRANSACTIONS ────────────────────────────────────────────────────────────
 export const transactionsTable = pgTable("transactions", {
   id: uuid("id").defaultRandom().primaryKey().notNull(),
-  userId: uuid("user_id").notNull(),
+  userId: integer("user_id").notNull(),
 
-  type: varchar("type", { length: 50 }).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), 
   amount: integer("amount").notNull(),
 
   metadata: text("metadata"),

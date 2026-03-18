@@ -24,16 +24,14 @@ export const registerUser = async (req: express.Request, res: express.Response) 
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const token=jwt.sign({ email }, process.env.JWT_SECRET!, { expiresIn: '10h' });
+  const [newUser] = await db.insert(usersTable).values({ fullname, email, password: hashedPassword }).returning({ id: usersTable.id });
 
-  await db.insert(usersTable).values({ fullname, email, password: hashedPassword });
-
-  const userId=(await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email)).limit(1))[0].id;
+  const token = jwt.sign({ email, id: newUser.id }, process.env.JWT_SECRET!, { expiresIn: '10h' });
 
   return res.status(201).json({ 
     message: "User registered successfully", 
     token, 
-    id: userId, 
+    id: newUser.id, 
     fullname 
   });
 }
@@ -59,10 +57,9 @@ export const loginUser = async (req: express.Request, res: express.Response) => 
         return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const userId=(await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email)).limit(1))[0].id;
-    const token = jwt.sign({ email }, process.env.JWT_SECRET!, { expiresIn: '10h' });
+    const token = jwt.sign({ email, id: user.id }, process.env.JWT_SECRET!, { expiresIn: '10h' });
 
-    return res.status(200).json({ message: "Login successful", token ,id: userId,fullname: user.fullname});
+    return res.status(200).json({ message: "Login successful", token ,id: user.id,fullname: user.fullname});
 
 }
 

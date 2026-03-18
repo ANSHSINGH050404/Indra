@@ -6,6 +6,7 @@ import morgan from "morgan";
 dotenv.config();
 import cors from "cors";
 import marketRouter from "./router/market.route";
+import tradeRouter from "./router/trade.route";
 
 const app = express();
 app.use(cors());
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRouter);
 app.use("/api", marketRouter);
+app.use("/api", tradeRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

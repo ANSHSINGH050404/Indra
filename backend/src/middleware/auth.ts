@@ -27,6 +27,11 @@ export const authMiddleware = (req: CustomRequest, res: Response, next: NextFunc
     console.error("Error occurred while verifying token:", error);
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
-
-
 }
+
+export const adminMiddleware = (req: CustomRequest, res: Response, next: NextFunction) => {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).json({ message: "Forbidden: Admin access required" });
+  }
+  next();
+};

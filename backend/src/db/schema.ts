@@ -18,6 +18,7 @@ export const usersTable = pgTable(
     fullname: varchar("fullname", { length: 255 }).notNull(),
     email: varchar("email", { length: 255 }).notNull(),
     password: varchar("password", { length: 255 }).notNull(),
+    isAdmin: boolean("isAdmin").default(false).notNull(),
 
     points: integer("points").default(1000).notNull(),
     isVerified: boolean("isVerified").default(false).notNull(),

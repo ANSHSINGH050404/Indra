@@ -26,13 +26,14 @@ export const registerUser = async (req: express.Request, res: express.Response) 
 
   const [newUser] = await db.insert(usersTable).values({ fullname, email, password: hashedPassword }).returning({ id: usersTable.id });
 
-  const token = jwt.sign({ email, id: newUser.id }, process.env.JWT_SECRET!, { expiresIn: '10h' });
+  const token = jwt.sign({ email, id: newUser.id, isAdmin: false }, process.env.JWT_SECRET!, { expiresIn: '10h' });
 
   return res.status(201).json({ 
     message: "User registered successfully", 
     token, 
     id: newUser.id, 
-    fullname 
+    fullname,
+    isAdmin: false
   });
 }
 
@@ -57,9 +58,15 @@ export const loginUser = async (req: express.Request, res: express.Response) => 
         return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const token = jwt.sign({ email, id: user.id }, process.env.JWT_SECRET!, { expiresIn: '10h' });
+    const token = jwt.sign({ email, id: user.id, isAdmin: user.isAdmin }, process.env.JWT_SECRET!, { expiresIn: '10h' });
 
-    return res.status(200).json({ message: "Login successful", token ,id: user.id,fullname: user.fullname});
+    return res.status(200).json({ 
+        message: "Login successful", 
+        token, 
+        id: user.id, 
+        fullname: user.fullname,
+        isAdmin: user.isAdmin
+    });
 
 }
 

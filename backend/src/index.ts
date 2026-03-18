@@ -8,6 +8,7 @@ import cors from "cors";
 import marketRouter from "./router/market.route";
 import tradeRouter from "./router/trade.route";
 import adminRouter from "./router/admin.route";
+import leaderboardRouter from "./router/leaderboard.route";
 
 const app = express();
 app.use(cors());
@@ -25,6 +26,7 @@ app.use("/auth", authRouter);
 app.use("/api", marketRouter);
 app.use("/api", tradeRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api", leaderboardRouter);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

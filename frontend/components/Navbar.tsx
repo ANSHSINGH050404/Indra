@@ -44,6 +44,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Markets", href: "/" },
+    { name: "Leaderboard", href: "/leaderboard" },
     { name: "Activity", href: "/history" },
     { name: "Portfolio", href: "/portfolio" },
     ...(user?.isAdmin ? [{ name: "Admin", href: "/admin" }] : []),
@@ -78,19 +79,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Center: Search Bar */}
-        <div className="hidden lg:flex flex-1 max-w-md mx-8">
-          <div className="relative w-full group">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-lime-400 transition-colors">
-              <SearchIcon />
-            </span>
-            <input
-              type="text"
-              placeholder="Search markets..."
-              className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-lime-400/50 focus:bg-white/[0.08] transition-all"
-            />
-          </div>
-        </div>
+      
 
         {/* Right Side: Auth & User */}
         <div className="flex items-center gap-4">

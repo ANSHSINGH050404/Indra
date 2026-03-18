@@ -33,8 +33,12 @@ export const registerUser = async (req: express.Request, res: express.Response) 
 
   const userId=(await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email)).limit(1))[0].id;
 
-  return res.status(201).json({ message: "User registered successfully", token,Id: userId,fullname });
-
+  return res.status(201).json({ 
+    message: "User registered successfully", 
+    token, 
+    id: userId, 
+    fullname 
+  });
 }
 
 

@@ -4,6 +4,7 @@ import React, { useState, ReactNode, useEffect } from "react";
 import { loginUser } from "@/services/auth";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { api } from "@/lib/api";
 
 const EyeOpen = () => (
   <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
@@ -89,6 +90,11 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleSignIn = () => {
+    const baseUrl = api.defaults.baseURL || "http://localhost:8000";
+    window.location.href = `${baseUrl}/auth/google?redirect=${encodeURIComponent("/")}`;
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -158,6 +164,28 @@ export default function LoginPage() {
               )}
 
               {/* ── Fields ── */}
+              {/* Google */}
+              <button
+                type="button"
+                onClick={handleGoogleSignIn}
+                className="w-full flex items-center justify-center gap-3 py-3.5 rounded-xl border border-white/[0.07] bg-white/[0.03] text-white font-bold text-sm tracking-wide hover:bg-white/[0.06] hover:border-white/[0.12] transition-all"
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.02 1.53 7.4 2.82l5.1-5.1C33.4 4.1 29.1 2 24 2 14.7 2 6.9 7.4 3.2 15.2l6.1 4.7C11.1 13.4 17 9.5 24 9.5z" />
+                  <path fill="#4285F4" d="M46.1 24.5c0-1.7-.15-2.95-.47-4.25H24v8.05h12.62c-.25 2-1.6 5-4.6 7.05l7.1 5.5c4.25-3.92 6.98-9.7 6.98-16.4z" />
+                  <path fill="#FBBC05" d="M9.3 28.95c-.45-1.35-.7-2.8-.7-4.3s.25-2.95.68-4.3l-6.1-4.7C1.8 18.35 1 21.15 1 24.65s.8 6.3 2.2 9l6.1-4.7z" />
+                  <path fill="#34A853" d="M24 47c6.1 0 11.2-2 14.93-5.4l-7.1-5.5c-1.9 1.33-4.48 2.28-7.83 2.28-7 0-12.9-3.9-14.7-9.35l-6.1 4.7C6.9 40.6 14.7 47 24 47z" />
+                  <path fill="none" d="M1 1h46v46H1z" />
+                </svg>
+                Continue with Google
+              </button>
+
+              <div className="flex items-center gap-3 my-6">
+                <div className="flex-1 h-px bg-white/[0.06]" />
+                <span className="text-zinc-600 text-xs whitespace-nowrap">or</span>
+                <div className="flex-1 h-px bg-white/[0.06]" />
+              </div>
+
               <div className="flex flex-col gap-4">
 
                 {/* Email */}

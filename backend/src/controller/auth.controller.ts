@@ -1,14 +1,11 @@
 import express from "express";
 import 'dotenv/config';
-import { drizzle } from 'drizzle-orm/neon-http';
 import { eq } from 'drizzle-orm';
 import { usersTable } from '../db/schema';
-import { neon } from "@neondatabase/serverless";
+import { db } from '../db/index';
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-
-const db= drizzle({ client: neon(process.env.DATABASE_URL!) });
 
 export const registerUser = async (req: express.Request, res: express.Response) => {
   console.log("Received body:", req.body);

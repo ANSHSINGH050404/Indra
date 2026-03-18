@@ -16,6 +16,7 @@ interface User {
   fullname: string;
   email: string;
   points: number;
+  isAdmin: boolean;
 }
 
 interface AuthContextType {

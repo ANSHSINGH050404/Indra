@@ -46,6 +46,7 @@ export default function Navbar() {
     { name: "Markets", href: "/" },
     { name: "Activity", href: "/history" },
     { name: "Portfolio", href: "/portfolio" },
+    ...(user?.isAdmin ? [{ name: "Admin", href: "/admin" }] : []),
   ];
 
   // Hide navbar on login/register pages

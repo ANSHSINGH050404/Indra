@@ -10,6 +10,7 @@ import React, {
 } from "react";
 
 import { getMe } from "@/services/auth";
+import { toast } from "sonner";
 
 interface User {
   id: number;
@@ -35,6 +36,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
+  const handleUnauthorized = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("fullname");
+    setUser(null);
+    setIsLoggedIn(false);
+    toast.error("Session expired. Please log in again.");
+  };
+
   const refreshUser = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -48,9 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoggedIn(true);
     } catch (error) {
       console.error("Failed to fetch user:", error);
-      setUser(null);
-      setIsLoggedIn(false);
-      localStorage.removeItem("token");
+      handleUnauthorized();
     }
   };
 
@@ -61,6 +68,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (token) {
       refreshUser();
     }
+  }, []);
+
+  useEffect(() => {
+    const onUnauthorized = () => handleUnauthorized();
+    window.addEventListener("auth:unauthorized", onUnauthorized);
+    return () => window.removeEventListener("auth:unauthorized", onUnauthorized);
   }, []);
 
   return (

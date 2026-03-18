@@ -9,7 +9,6 @@ import crypto from "crypto";
 
 
 export const registerUser = async (req: express.Request, res: express.Response) => {
-  console.log("Received body:", req.body);
   const { fullname, email, password } = req.body || {};
 
   if (!fullname || !email || !password) {
@@ -41,8 +40,6 @@ export const registerUser = async (req: express.Request, res: express.Response) 
 
 export const loginUser = async (req: express.Request, res: express.Response) => {
   const { email, password } = req.body || {};
-
-  console.log("Received body:", req.body);
   
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
@@ -90,6 +87,7 @@ export const getMe = async (req: any, res: express.Response) => {
 
 const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo";
 
 const getGoogleConfig = () => {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -107,13 +105,6 @@ const getGoogleConfig = () => {
     redirectUri: redirectUri.trim(),
     frontendUrl: frontendUrl.trim().replace(/\/$/, ""),
   };
-};
-
-const decodeJwtPayload = (token: string) => {
-  const parts = token.split(".");
-  if (parts.length < 2) throw new Error("Invalid ID token");
-  const payloadJson = Buffer.from(parts[1], "base64url").toString("utf8");
-  return JSON.parse(payloadJson);
 };
 
 const safeRedirectPath = (value: unknown) => {
@@ -212,34 +203,41 @@ export const googleOAuthCallback = async (req: express.Request, res: express.Res
       return redirectWithError("Google did not return an ID token");
     }
 
-    const idPayload = decodeJwtPayload(idToken);
+    // Validate the ID token with Google (includes signature verification).
+    const tokenInfoRes = await fetch(`${GOOGLE_TOKENINFO_URL}?id_token=${encodeURIComponent(idToken)}`);
+    const tokenInfo: any = await tokenInfoRes.json().catch(() => ({}));
+    if (!tokenInfoRes.ok) {
+      console.error("Google tokeninfo failed:", tokenInfo);
+      return redirectWithError("Invalid Google ID token");
+    }
 
-    if (idPayload.aud !== clientId) {
+    if (tokenInfo.aud !== clientId) {
       return redirectWithError("Invalid ID token audience");
     }
 
     const validIssuers = new Set(["accounts.google.com", "https://accounts.google.com"]);
-    if (!validIssuers.has(idPayload.iss)) {
+    if (!validIssuers.has(tokenInfo.iss)) {
       return redirectWithError("Invalid ID token issuer");
     }
 
-    const expMs = Number(idPayload.exp) * 1000;
+    const expMs = Number(tokenInfo.exp) * 1000;
     if (!expMs || Date.now() > expMs) {
       return redirectWithError("ID token expired");
     }
 
-    const email = (idPayload.email as string | undefined) || "";
+    const email = (tokenInfo.email as string | undefined) || "";
     if (!email) {
       return redirectWithError("Google account email not available");
     }
 
-    if (idPayload.email_verified !== true) {
+    const emailVerified = tokenInfo.email_verified === true || tokenInfo.email_verified === "true";
+    if (!emailVerified) {
       return redirectWithError("Google email is not verified");
     }
 
     const fullname =
-      (idPayload.name as string | undefined) ||
-      (idPayload.given_name as string | undefined) ||
+      (tokenInfo.name as string | undefined) ||
+      (tokenInfo.given_name as string | undefined) ||
       email.split("@")[0];
 
     const session = await db.transaction(async (tx) => {

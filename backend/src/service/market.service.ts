@@ -20,3 +20,13 @@ export const getMarketBySlugData = async (slug: string) => {
   });
   return data;
 };
+
+export const getMarketsDataForUser = async (userId: number) => {
+  const data = await db.query.marketsTable.findMany({
+    where: eq(marketsTable.createdBy, userId),
+    with: {
+      outcomes: true,
+    },
+  });
+  return data;
+};

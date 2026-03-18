@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { executeTrade } from "../service/trade.service";
+import { getTradesByUser } from "../service/trade.service";
 
 export const createTrade = async (req: any, res: Response) => {
   const { outcomeId, amount, type } = req.body;
@@ -21,3 +22,16 @@ export const createTrade = async (req: any, res: Response) => {
     res.status(400).json({ message: error.message || "Failed to execute trade" });
   }
 };
+
+
+export const getALLTradesByUser = async (req: any, res: Response) => {
+  const userId = req.user.id;
+
+  try {
+    const trades = await getTradesByUser(userId);
+    res.status(200).json(trades);
+  } catch (error: any) {
+    console.error("Error fetching trades:", error);
+    res.status(400).json({ message: error.message || "Failed to fetch trades" });
+  }
+}

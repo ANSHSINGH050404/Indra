@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { getAllMarketsdata, getMarketBySlugData } from "../service/market.service";
+import { getAllMarketsdata, getMarketBySlugData, getMarketsDataForUser } from "../service/market.service";
 
 /**
  * Fetches all markets from the database.
@@ -35,3 +35,12 @@ export const getMarketBySlug = async (req: Request, res: Response) => {
   }
 };
 
+export const userMarket = async (req: any, res: Response) => {
+  try {
+    const markets = await getMarketsDataForUser(req.user.id);
+    res.status(200).json(markets);
+  } catch (error) {
+    console.error("Error in userMarket controller:", error);
+    res.status(500).json({ message: "Failed to fetch markets for user" });
+  }
+}

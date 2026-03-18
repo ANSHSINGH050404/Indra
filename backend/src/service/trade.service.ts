@@ -102,3 +102,14 @@ export const executeTrade = async (
     return { success: true, sharesBought: shares, newBalance: user.points - amount };
   });
 };
+
+
+
+export const getTradesByUser = async (userId: number) => {
+  const trades = await db.query.tradesTable.findMany({
+    where: eq(tradesTable.userId, userId),
+    orderBy: sql`${tradesTable.createdAt} DESC`,
+  });
+
+  return trades;
+};

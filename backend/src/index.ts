@@ -43,6 +43,10 @@ app.get("/", (req, res) => {
   res.send("Hello TypeScript Backend 🚀");
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 app.use("/auth", authRouter);
 app.use("/api", marketRouter);
 app.use("/api", tradeRouter);

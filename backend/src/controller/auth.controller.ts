@@ -63,3 +63,20 @@ export const loginUser = async (req: express.Request, res: express.Response) => 
 
 }
 
+export const getMe = async (req: any, res: express.Response) => {
+  try {
+    const userId = req.user.id;
+    const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+    
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const { password, ...userData } = user;
+    return res.status(200).json(userData);
+  } catch (error) {
+    console.error("Error in getMe:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+

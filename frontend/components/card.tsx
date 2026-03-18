@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { createTrade } from "@/services/trade";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -92,6 +93,7 @@ interface MarketCardProps {
 }
 
 export default function MarketCard({ market, yesProbability }: MarketCardProps) {
+  const { refreshUser } = useAuth();
   const [pick, setPick]   = useState<"yes" | "no" | null>(null);
   const [saved, setSaved] = useState(false);
   const [amount, setAmount] = useState<number>(100);
@@ -115,6 +117,7 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
     try {
       await createTrade(outcome.id, amount, "BUY");
       setStatus({ type: "success", msg: "Trade executed!" });
+      await refreshUser();
       setTimeout(() => setStatus(null), 3000);
     } catch (err: any) {
       setStatus({ 

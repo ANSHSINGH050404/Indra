@@ -10,7 +10,7 @@ import { createTrade } from "@/services/trade";
 export default function MarketDetailPage() {
   const { slug } = useParams();
   const router = useRouter();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, refreshUser } = useAuth();
   const [market, setMarket] = useState<Market | null>(null);
   const [loading, setLoading] = useState(true);
   const [amount, setAmount] = useState<number>(100);
@@ -48,6 +48,7 @@ export default function MarketDetailPage() {
     try {
       await createTrade(outcome.id, amount, "BUY");
       setStatus({ type: "success", msg: `Successfully bought ${title} shares!` });
+      await refreshUser();
       // Refresh market data to show updated volume (optional)
       const response = await api.get(`/api/markets/${slug}`);
       setMarket(response.data);

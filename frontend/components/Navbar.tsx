@@ -24,16 +24,16 @@ const BellIcon = () => (
 );
 
 export default function Navbar() {
-  const { isLoggedIn, setIsLoggedIn } = useAuth();
+  const { isLoggedIn, setIsLoggedIn, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [fullname, setFullname] = useState("");
 
   useEffect(() => {
-    if (isLoggedIn) {
-      setFullname(localStorage.getItem("fullname") || "User");
+    if (isLoggedIn && user) {
+      setFullname(user.fullname || "User");
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, user]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -102,7 +102,7 @@ export default function Navbar() {
                  </button>
                  <div className="flex flex-col items-end">
                     <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Balance</span>
-                    <span className="text-sm font-bold text-white">₹0.00</span>
+                    <span className="text-sm font-bold text-white">₹{user?.points?.toLocaleString() || "0.00"}</span>
                  </div>
               </div>
 

@@ -75,7 +75,7 @@ function Field({ label, error, children }: FieldProps) {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { setIsLoggedIn } = useAuth();
+  const { setIsLoggedIn, refreshUser } = useAuth();
   const [form, setForm]       = useState({ name: "", email: "", password: "" });
   const [errors, setErrors]   = useState<Record<string, string | undefined>>({});
   const [showPw, setShowPw]   = useState(false);
@@ -109,6 +109,7 @@ export default function RegisterPage() {
       const data = await registerUser(form.name, form.email, form.password);
       localStorage.setItem("token", data.token);
       localStorage.setItem("fullname", data.fullname);
+      await refreshUser();
       setIsLoggedIn(true);
       setLoading(false);
       setDone(true);

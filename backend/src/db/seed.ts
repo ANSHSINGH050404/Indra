@@ -1,5 +1,5 @@
 import { db } from "./index";
-import { marketsTable, outcomesTable, tradesTable, positionsTable, transactionsTable, marketResolutionsTable } from "./schema";
+import { marketsTable, outcomesTable, tradesTable, positionsTable, transactionsTable, marketResolutionsTable, priceHistoryTable } from "./schema";
 
 async function seedMarkets() {
   console.log("Seeding markets and outcomes...");
@@ -8,12 +8,13 @@ async function seedMarkets() {
     // 1. Clear existing data to avoid conflicts during re-seeding
     console.log("Cleaning up old data...");
     await db.delete(marketResolutionsTable);
+    await db.delete(priceHistoryTable);
     await db.delete(tradesTable);
     await db.delete(positionsTable);
     await db.delete(transactionsTable);
     await db.delete(outcomesTable);
     await db.delete(marketsTable);
-
+    
     const marketsData = [
       {
         title: "Will Bitcoin hit ₹1,00,00,000 by end of 2026?",
@@ -57,7 +58,7 @@ async function seedMarkets() {
       const p_no = 100 - p_yes;
 
       // Create YES/NO outcomes for each market
-      await db.insert(outcomesTable).values([
+      const [yes, no] = await db.insert(outcomesTable).values([
         {
           marketId: insertedMarket.id,
           title: "YES",
@@ -68,7 +69,22 @@ async function seedMarkets() {
           title: "NO",
           price: p_no,
         }
-      ]);
+      ]).returning();
+
+      // Seed some random history points
+      const historyPoints = 5;
+      for (let i = 0; i < historyPoints; i++) {
+        const timestamp = new Date();
+        timestamp.setHours(timestamp.getHours() - (historyPoints - i) * 2);
+        
+        const randomFluctuation = Math.floor(Math.random() * 10) - 5;
+        const historicalYesPrice = Math.max(1, Math.min(99, p_yes + randomFluctuation));
+        
+        await db.insert(priceHistoryTable).values([
+            { marketId: insertedMarket.id, outcomeId: yes.id, price: historicalYesPrice, timestamp },
+            { marketId: insertedMarket.id, outcomeId: no.id, price: 100 - historicalYesPrice, timestamp }
+        ]);
+      }
     }
 
     console.log("Markets and Outcomes seeded successfully!");

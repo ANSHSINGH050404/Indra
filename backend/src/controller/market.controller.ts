@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { getAllMarketsdata, getMarketBySlugData, getMarketsDataForUser, getMarketCategoriesData, MarketListQuery } from "../service/market.service";
 import { db } from "../db/index";
-import { tradesTable, outcomesTable } from "../db/schema";
+import { tradesTable, outcomesTable, priceHistoryTable } from "../db/schema";
 import { eq, asc } from "drizzle-orm";
 
 export const getMarketPriceHistory = async (req: Request, res: Response) => {
@@ -11,25 +11,24 @@ export const getMarketPriceHistory = async (req: Request, res: Response) => {
     const market = await getMarketBySlugData(slug);
     if (!market) return res.status(404).json({ message: "Market not found" });
 
-    // For each outcome, get the historical trade prices
-    const historyPromises = market.outcomes.map(async (outcome: any) => {
-      const trades = await db.query.tradesTable.findMany({
-        where: eq(tradesTable.outcomeId, outcome.id),
-        orderBy: [asc(tradesTable.createdAt)],
-        limit: 100, // Last 100 trades
-      });
+    const history = await db.query.priceHistoryTable.findMany({
+      where: eq(priceHistoryTable.marketId, market.id),
+      orderBy: [asc(priceHistoryTable.timestamp)],
+    });
 
+    // Group by outcome
+    const results = market.outcomes.map((outcome: any) => {
+      const outcomeHistory = history.filter(h => h.outcomeId === outcome.id);
       return {
         outcomeId: outcome.id,
         outcomeTitle: outcome.title,
-        history: trades.map(t => ({
-          price: t.priceAtPurchase,
-          timestamp: t.createdAt,
+        history: outcomeHistory.map(h => ({
+          price: h.price,
+          timestamp: h.timestamp,
         }))
       };
     });
 
-    const results = await Promise.all(historyPromises);
     res.status(200).json(results);
   } catch (error) {
     console.error("Price history error:", error);

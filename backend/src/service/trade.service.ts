@@ -1,5 +1,5 @@
 import { db } from "../db/index";
-import { usersTable, tradesTable, positionsTable, transactionsTable, outcomesTable, marketsTable } from "../db/schema";
+import { usersTable, tradesTable, positionsTable, transactionsTable, outcomesTable, marketsTable, priceHistoryTable } from "../db/schema";
 import { eq, and, sql } from "drizzle-orm";
 
 export const executeTrade = async (
@@ -83,6 +83,13 @@ export const executeTrade = async (
       for (const o of allOutcomes) {
           const newPrice = o.title.toUpperCase() === "YES" ? Math.round(p_y_new) : Math.round(p_n_new);
           await tx.update(outcomesTable).set({ price: newPrice }).where(eq(outcomesTable.id, o.id));
+          
+          // Record Price History
+          await tx.insert(priceHistoryTable).values({
+            marketId: market.id,
+            outcomeId: o.id,
+            price: newPrice,
+          });
       }
 
       // Deduct points
@@ -191,6 +198,13 @@ export const executeTrade = async (
       for (const o of allOutcomes) {
           const newPrice = o.title.toUpperCase() === "YES" ? Math.round(p_y_new) : Math.round(p_n_new);
           await tx.update(outcomesTable).set({ price: newPrice }).where(eq(outcomesTable.id, o.id));
+          
+          // Record Price History
+          await tx.insert(priceHistoryTable).values({
+            marketId: market.id,
+            outcomeId: o.id,
+            price: newPrice,
+          });
       }
 
       // Add points to user

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.commentsRelations = exports.positionsRelations = exports.tradesRelations = exports.outcomesRelations = exports.marketsRelations = exports.marketResolutionsTable = exports.transactionsTable = exports.positionsTable = exports.tradesTable = exports.outcomesTable = exports.marketsTable = exports.commentsTable = exports.usersTable = void 0;
+exports.priceHistoryRelations = exports.commentsRelations = exports.positionsRelations = exports.tradesRelations = exports.outcomesRelations = exports.marketsRelations = exports.priceHistoryTable = exports.marketResolutionsTable = exports.transactionsTable = exports.positionsTable = exports.tradesTable = exports.outcomesTable = exports.marketsTable = exports.commentsTable = exports.usersTable = void 0;
 const pg_core_1 = require("drizzle-orm/pg-core");
 // ─── USERS ───────────────────────────────────────────────────────────────────
 exports.usersTable = (0, pg_core_1.pgTable)("users", {
@@ -87,10 +87,19 @@ exports.marketResolutionsTable = (0, pg_core_1.pgTable)("market_resolutions", {
     winningOutcomeId: (0, pg_core_1.uuid)("winning_outcome_id").notNull(),
     resolvedAt: (0, pg_core_1.timestamp)("resolved_at").defaultNow().notNull(),
 });
+// ─── PRICE HISTORY ────────────────────────────────────────────────────────────
+exports.priceHistoryTable = (0, pg_core_1.pgTable)("price_history", {
+    id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
+    marketId: (0, pg_core_1.uuid)("market_id").notNull(),
+    outcomeId: (0, pg_core_1.uuid)("outcome_id").notNull(),
+    price: (0, pg_core_1.integer)("price").notNull(),
+    timestamp: (0, pg_core_1.timestamp)("timestamp").defaultNow().notNull(),
+});
 // ─── RELATIONS ───────────────────────────────────────────────────────────────
 const drizzle_orm_1 = require("drizzle-orm");
 exports.marketsRelations = (0, drizzle_orm_1.relations)(exports.marketsTable, ({ many }) => ({
     outcomes: many(exports.outcomesTable),
+    priceHistory: many(exports.priceHistoryTable),
 }));
 exports.outcomesRelations = (0, drizzle_orm_1.relations)(exports.outcomesTable, ({ one, many }) => ({
     market: one(exports.marketsTable, {
@@ -98,6 +107,7 @@ exports.outcomesRelations = (0, drizzle_orm_1.relations)(exports.outcomesTable, 
         references: [exports.marketsTable.id],
     }),
     trades: many(exports.tradesTable),
+    priceHistory: many(exports.priceHistoryTable),
 }));
 exports.tradesRelations = (0, drizzle_orm_1.relations)(exports.tradesTable, ({ one }) => ({
     outcome: one(exports.outcomesTable, {
@@ -127,5 +137,15 @@ exports.commentsRelations = (0, drizzle_orm_1.relations)(exports.commentsTable, 
     user: one(exports.usersTable, {
         fields: [exports.commentsTable.userId],
         references: [exports.usersTable.id],
+    }),
+}));
+exports.priceHistoryRelations = (0, drizzle_orm_1.relations)(exports.priceHistoryTable, ({ one }) => ({
+    market: one(exports.marketsTable, {
+        fields: [exports.priceHistoryTable.marketId],
+        references: [exports.marketsTable.id],
+    }),
+    outcome: one(exports.outcomesTable, {
+        fields: [exports.priceHistoryTable.outcomeId],
+        references: [exports.outcomesTable.id],
     }),
 }));

@@ -128,11 +128,22 @@ export const marketResolutionsTable = pgTable("market_resolutions", {
   resolvedAt: timestamp("resolved_at").defaultNow().notNull(),
 });
 
+// ─── PRICE HISTORY ────────────────────────────────────────────────────────────
+export const priceHistoryTable = pgTable("price_history", {
+  id: uuid("id").defaultRandom().primaryKey().notNull(),
+  marketId: uuid("market_id").notNull(),
+  outcomeId: uuid("outcome_id").notNull(),
+
+  price: integer("price").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+});
+
 // ─── RELATIONS ───────────────────────────────────────────────────────────────
 import { relations } from "drizzle-orm";
 
 export const marketsRelations = relations(marketsTable, ({ many }) => ({
   outcomes: many(outcomesTable),
+  priceHistory: many(priceHistoryTable),
 }));
 
 export const outcomesRelations = relations(outcomesTable, ({ one, many }) => ({
@@ -141,6 +152,7 @@ export const outcomesRelations = relations(outcomesTable, ({ one, many }) => ({
     references: [marketsTable.id],
   }),
   trades: many(tradesTable),
+  priceHistory: many(priceHistoryTable),
 }));
 
 export const tradesRelations = relations(tradesTable, ({ one }) => ({
@@ -173,6 +185,17 @@ export const commentsRelations = relations(commentsTable, ({ one }) => ({
   user: one(usersTable, {
     fields: [commentsTable.userId],
     references: [usersTable.id],
+  }),
+}));
+
+export const priceHistoryRelations = relations(priceHistoryTable, ({ one }) => ({
+  market: one(marketsTable, {
+    fields: [priceHistoryTable.marketId],
+    references: [marketsTable.id],
+  }),
+  outcome: one(outcomesTable, {
+    fields: [priceHistoryTable.outcomeId],
+    references: [outcomesTable.id],
   }),
 }));
 

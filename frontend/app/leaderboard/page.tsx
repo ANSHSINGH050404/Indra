@@ -148,7 +148,8 @@ export default function LeaderboardPage() {
                   return (
                     <div
                       key={e.id}
-                      className={`px-6 py-4 flex items-center gap-4 hover:bg-white/[0.02] transition-colors ${
+                      onClick={() => router.push(`/profile/${e.id}`)}
+                      className={`px-6 py-4 flex items-center gap-4 cursor-pointer hover:bg-white/[0.05] transition-colors ${
                         isMe ? "bg-lime-400/[0.04]" : ""
                       }`}
                     >

@@ -23,6 +23,9 @@ export const usersTable = pgTable(
     points: integer("points").default(1000).notNull(),
     isVerified: boolean("isVerified").default(false).notNull(),
 
+    bio: text("bio"),
+    avatarUrl: varchar("avatar_url", { length: 500 }),
+
     lastFaucetClaimedAt: timestamp("last_faucet_claimed_at"),
 
     createdAt: timestamp("createdAt").defaultNow().notNull(),

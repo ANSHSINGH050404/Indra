@@ -13,6 +13,7 @@ export const getMarketComments = async (req: Request, res: Response) => {
       with: {
         user: {
           columns: {
+            id: true,
             fullname: true,
           },
         },
@@ -47,6 +48,7 @@ export const postComment = async (req: any, res: Response) => {
       with: {
         user: {
           columns: {
+            id: true,
             fullname: true,
           },
         },

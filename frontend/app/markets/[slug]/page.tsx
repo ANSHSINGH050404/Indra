@@ -247,7 +247,12 @@ export default function MarketDetailPage() {
                         comments.map((comment) => (
                             <div key={comment.id} className="border-b border-white/5 pb-6">
                                 <div className="flex justify-between items-center mb-2">
-                                    <span className="font-black text-lime-400 text-xs uppercase tracking-widest">{comment.user.fullname}</span>
+                                    <button 
+                                        onClick={() => router.push(`/profile/${comment.user.id}`)}
+                                        className="font-black text-lime-400 text-xs uppercase tracking-widest hover:underline"
+                                    >
+                                        {comment.user.fullname}
+                                    </button>
                                     <span className="text-[10px] text-zinc-600">{new Date(comment.createdAt).toLocaleString()}</span>
                                 </div>
                                 <p className="text-zinc-300 text-sm leading-relaxed">{comment.content}</p>

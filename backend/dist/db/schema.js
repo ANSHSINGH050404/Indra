@@ -12,6 +12,8 @@ exports.usersTable = (0, pg_core_1.pgTable)("users", {
     isAdmin: (0, pg_core_1.boolean)("isAdmin").default(false).notNull(),
     points: (0, pg_core_1.integer)("points").default(1000).notNull(),
     isVerified: (0, pg_core_1.boolean)("isVerified").default(false).notNull(),
+    bio: (0, pg_core_1.text)("bio"),
+    avatarUrl: (0, pg_core_1.varchar)("avatar_url", { length: 500 }),
     lastFaucetClaimedAt: (0, pg_core_1.timestamp)("last_faucet_claimed_at"),
     createdAt: (0, pg_core_1.timestamp)("createdAt").defaultNow().notNull(),
     updatedAt: (0, pg_core_1.timestamp)("updatedAt").defaultNow().notNull(),

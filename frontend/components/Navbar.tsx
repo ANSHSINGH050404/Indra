@@ -47,6 +47,7 @@ export default function Navbar() {
     { name: "Portfolio", href: "/portfolio" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Activity", href: "/history" },
+    ...(user?.id ? [{ name: "Profile", href: `/profile/${user.id}` }] : []),
     ...(user?.isAdmin ? [{ name: "Admin", href: "/admin" }] : []),
   ];
 
@@ -111,7 +112,7 @@ export default function Navbar() {
                 </div>
                 <div 
                   className="w-9 h-9 rounded-full bg-gradient-to-tr from-lime-400 to-indigo-500 p-[1px] cursor-pointer"
-                  onClick={() => router.push('/history')}
+                  onClick={() => router.push(`/profile/${user?.id}`)}
                 >
                    <div className="w-full h-full rounded-full bg-[#0d0f17] flex items-center justify-center text-white">
                       <UserIcon />

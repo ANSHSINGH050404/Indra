@@ -125,6 +125,9 @@ export const marketResolutionsTable = pgTable("market_resolutions", {
   marketId: uuid("market_id").notNull(),
   winningOutcomeId: uuid("winning_outcome_id").notNull(),
 
+  totalPayout: integer("total_payout").default(0).notNull(),
+  winnersCount: integer("winners_count").default(0).notNull(),
+
   resolvedAt: timestamp("resolved_at").defaultNow().notNull(),
 });
 

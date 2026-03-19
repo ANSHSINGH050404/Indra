@@ -85,6 +85,8 @@ exports.marketResolutionsTable = (0, pg_core_1.pgTable)("market_resolutions", {
     id: (0, pg_core_1.uuid)("id").defaultRandom().primaryKey().notNull(),
     marketId: (0, pg_core_1.uuid)("market_id").notNull(),
     winningOutcomeId: (0, pg_core_1.uuid)("winning_outcome_id").notNull(),
+    totalPayout: (0, pg_core_1.integer)("total_payout").default(0).notNull(),
+    winnersCount: (0, pg_core_1.integer)("winners_count").default(0).notNull(),
     resolvedAt: (0, pg_core_1.timestamp)("resolved_at").defaultNow().notNull(),
 });
 // ─── PRICE HISTORY ────────────────────────────────────────────────────────────

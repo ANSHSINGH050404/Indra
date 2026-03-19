@@ -86,12 +86,6 @@ export const resolveMarketAdmin = async (req: any, res: Response) => {
         })
         .where(eq(marketsTable.id, marketId));
 
-      // 3. Record Resolution
-      await tx.insert(marketResolutionsTable).values({
-        marketId,
-        winningOutcomeId,
-      });
-      
       // 4. Payout: positions.shares are stored as 1/100th contracts; 1 share pays 1 point on win.
       const winnerPayouts = await tx
         .select({
@@ -125,6 +119,14 @@ export const resolveMarketAdmin = async (req: any, res: Response) => {
           }),
         });
       }
+
+      // 3. Record Resolution
+      await tx.insert(marketResolutionsTable).values({
+        marketId,
+        winningOutcomeId,
+        totalPayout,
+        winnersCount: winnerPayouts.length,
+      });
 
       return {
         marketId,

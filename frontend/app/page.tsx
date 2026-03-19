@@ -129,9 +129,11 @@ export default function Home() {
               onChange={(e) => setCategory(e.target.value)}
               className="bg-white/[0.04] border border-white/[0.07] rounded-2xl py-3.5 px-4 text-sm text-white outline-none focus:border-lime-400/50 focus:ring-2 focus:ring-lime-400/10 transition-all"
             >
-              <option value="all">All categories</option>
+              <option value="all" className="bg-slate-800">
+                All categories
+              </option>
               {categories.map((c) => (
-                <option key={c} value={c}>
+                <option className="bg-slate-800" key={c} value={c}>
                   {c}
                 </option>
               ))}
@@ -142,10 +144,18 @@ export default function Home() {
               onChange={(e) => setStatus(e.target.value)}
               className="bg-white/[0.04] border border-white/[0.07] rounded-2xl py-3.5 px-4 text-sm text-white outline-none focus:border-lime-400/50 focus:ring-2 focus:ring-lime-400/10 transition-all"
             >
-              <option value="all">All status</option>
-              <option value="active">Active</option>
-              <option value="resolved">Resolved</option>
-              <option value="closed">Closed</option>
+              <option value="all" className="bg-slate-800">
+                All status
+              </option>
+              <option value="active" className="bg-slate-800">
+                Active
+              </option>
+              <option value="resolved" className="bg-slate-800">
+                Resolved
+              </option>
+              <option value="closed" className="bg-slate-800">
+                Closed
+              </option>
             </select>
 
             <select
@@ -153,9 +163,15 @@ export default function Home() {
               onChange={(e) => setSortKey(e.target.value as "newest" | "volume" | "expiring")}
               className="bg-white/[0.04] border border-white/[0.07] rounded-2xl py-3.5 px-4 text-sm text-white outline-none focus:border-lime-400/50 focus:ring-2 focus:ring-lime-400/10 transition-all"
             >
-              <option value="newest">Newest</option>
-              <option value="volume">Top volume</option>
-              <option value="expiring">Expiring soon</option>
+              <option value="newest" className="bg-slate-800">
+                Newest
+              </option>
+              <option value="volume" className="bg-slate-800">
+                Top volume
+              </option>
+              <option value="expiring" className="bg-slate-800">
+                Expiring soon
+              </option>
             </select>
 
             <button

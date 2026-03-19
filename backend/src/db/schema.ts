@@ -23,11 +23,24 @@ export const usersTable = pgTable(
     points: integer("points").default(1000).notNull(),
     isVerified: boolean("isVerified").default(false).notNull(),
 
+    lastFaucetClaimedAt: timestamp("last_faucet_claimed_at"),
+
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   },
   (table) => [unique("users_email_unique").on(table.email)],
 );
+
+// ─── COMMENTS ───────────────────────────────────────────────────────────────
+export const commentsTable = pgTable("comments", {
+  id: uuid("id").defaultRandom().primaryKey().notNull(),
+  marketId: uuid("market_id").notNull(),
+  userId: integer("user_id").notNull(),
+
+  content: text("content").notNull(),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 // ─── MARKETS ─────────────────────────────────────────────────────────────────
 export const marketsTable = pgTable("markets", {
@@ -44,6 +57,10 @@ export const marketsTable = pgTable("markets", {
   resolvedOutcomeId: uuid("resolved_outcome_id"),
 
   volume: integer("volume").default(0).notNull(),
+  
+  // AMM Pools (Initial liquidity)
+  yesPool: integer("yes_pool").default(500).notNull(),
+  noPool: integer("no_pool").default(500).notNull(),
 
   expiresAt: timestamp("expires_at").notNull(),
 
@@ -133,6 +150,28 @@ export const tradesRelations = relations(tradesTable, ({ one }) => ({
   }),
   user: one(usersTable, {
     fields: [tradesTable.userId],
+    references: [usersTable.id],
+  }),
+}));
+
+export const positionsRelations = relations(positionsTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [positionsTable.userId],
+    references: [usersTable.id],
+  }),
+  outcome: one(outcomesTable, {
+    fields: [positionsTable.outcomeId],
+    references: [outcomesTable.id],
+  }),
+}));
+
+export const commentsRelations = relations(commentsTable, ({ one }) => ({
+  market: one(marketsTable, {
+    fields: [commentsTable.marketId],
+    references: [marketsTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [commentsTable.userId],
     references: [usersTable.id],
   }),
 }));

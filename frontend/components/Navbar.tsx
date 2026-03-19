@@ -44,9 +44,9 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Markets", href: "/" },
+    { name: "Portfolio", href: "/portfolio" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Activity", href: "/history" },
-    { name: "Portfolio", href: "/portfolio" },
     ...(user?.isAdmin ? [{ name: "Admin", href: "/admin" }] : []),
   ];
 

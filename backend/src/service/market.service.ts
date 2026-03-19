@@ -1,6 +1,6 @@
 import { db } from "../db/index";
 import { marketsTable } from "../db/schema";
-import { and, asc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, eq, ilike, or, sql, ne } from "drizzle-orm";
 
 export type MarketListQuery = {
   q?: string;
@@ -27,6 +27,9 @@ export const getAllMarketsdata = async (query: MarketListQuery = {}) => {
 
   if (query.status) {
     whereClauses.push(eq(marketsTable.status, query.status));
+  } else {
+    // Default: exclude resolved markets
+    whereClauses.push(ne(marketsTable.status, "resolved"));
   }
 
   const where = whereClauses.length > 0 ? and(...whereClauses) : undefined;

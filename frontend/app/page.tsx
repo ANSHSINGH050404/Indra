@@ -150,9 +150,6 @@ export default function Home() {
               <option value="active" className="bg-slate-800">
                 Active
               </option>
-              <option value="resolved" className="bg-slate-800">
-                Resolved
-              </option>
               <option value="closed" className="bg-slate-800">
                 Closed
               </option>

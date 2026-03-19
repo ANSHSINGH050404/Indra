@@ -9,3 +9,8 @@ export const createTrade = async (outcomeId: string, amount: number, type: "BUY"
   });
   return res.data;
 };
+
+export const getPositions = async () => {
+  const res = await api.get("/api/positions");
+  return res.data;
+};

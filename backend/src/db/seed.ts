@@ -1,5 +1,5 @@
 import { db } from "./index";
-import { marketsTable, outcomesTable } from "./schema";
+import { marketsTable, outcomesTable, tradesTable, positionsTable, transactionsTable, marketResolutionsTable } from "./schema";
 
 async function seedMarkets() {
   console.log("Seeding markets and outcomes...");
@@ -7,6 +7,10 @@ async function seedMarkets() {
   try {
     // 1. Clear existing data to avoid conflicts during re-seeding
     console.log("Cleaning up old data...");
+    await db.delete(marketResolutionsTable);
+    await db.delete(tradesTable);
+    await db.delete(positionsTable);
+    await db.delete(transactionsTable);
     await db.delete(outcomesTable);
     await db.delete(marketsTable);
 
@@ -18,6 +22,8 @@ async function seedMarkets() {
         category: "Crypto",
         status: "active",
         volume: 150230,
+        yesPool: 750,
+        noPool: 250,
         expiresAt: new Date("2026-12-31T23:59:59Z"),
       },
       {
@@ -27,6 +33,8 @@ async function seedMarkets() {
         category: "Sports",
         status: "active",
         volume: 500000,
+        yesPool: 500,
+        noPool: 500,
         expiresAt: new Date("2026-07-19T23:59:59Z"),
       },
       {
@@ -36,6 +44,8 @@ async function seedMarkets() {
         category: "Science",
         status: "active",
         volume: 1250,
+        yesPool: 500,
+        noPool: 500,
         expiresAt: new Date("2030-12-31T23:59:59Z"),
       }
     ];
@@ -43,22 +53,22 @@ async function seedMarkets() {
     for (const m of marketsData) {
       const [insertedMarket] = await db.insert(marketsTable).values(m).returning({ id: marketsTable.id });
       
+      const p_yes = Math.round((m.yesPool / (m.yesPool + m.noPool)) * 100);
+      const p_no = 100 - p_yes;
+
       // Create YES/NO outcomes for each market
       await db.insert(outcomesTable).values([
         {
           marketId: insertedMarket.id,
           title: "YES",
-          price: Math.floor(Math.random() * 80) + 10, // Random price between 10-90
+          price: p_yes,
         },
         {
           marketId: insertedMarket.id,
           title: "NO",
-          price: 50, // Price logic will eventually be 100 - YES_PRICE
+          price: p_no,
         }
       ]);
-      
-      // Update NO price to be 100 - YES price for consistency
-      // (This is just for seed data)
     }
 
     console.log("Markets and Outcomes seeded successfully!");

@@ -25,6 +25,8 @@ export const createMarketAdmin = async (req: any, res: Response) => {
         imageUrl,
         expiresAt: new Date(expiresAt),
         createdBy: adminId,
+        yesPool: 500, // Initial seed
+        noPool: 500,  // Initial seed
       }).returning();
 
       // 2. Create Outcomes (e.g., "Yes", "No")

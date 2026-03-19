@@ -9,8 +9,11 @@ import marketRouter from "./router/market.route";
 import tradeRouter from "./router/trade.route";
 import adminRouter from "./router/admin.route";
 import leaderboardRouter from "./router/leaderboard.route";
+import userRouter from "./router/user.route";
+import commentRouter from "./router/comment.router";
 
 const app = express();
+
 app.disable("x-powered-by");
 
 app.use((req, res, next) => {
@@ -52,6 +55,9 @@ app.use("/api", marketRouter);
 app.use("/api", tradeRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api", leaderboardRouter);
+app.use("/api/user", userRouter);
+app.use("/api/comments", commentRouter);
+
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

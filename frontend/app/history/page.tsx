@@ -110,7 +110,7 @@ export default function HistoryPage() {
                   <tr key={trade.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        {trade.outcome.market.imageUrl && (
+                        {trade.outcome?.market?.imageUrl && (
                           <img 
                             src={trade.outcome.market.imageUrl} 
                             alt="" 
@@ -119,11 +119,11 @@ export default function HistoryPage() {
                         )}
                         <div className="flex flex-col">
                           <span className="font-bold text-white mb-0.5 line-clamp-1">
-                            {trade.outcome.market.title}
+                            {trade.outcome?.market?.title || "Unknown Market"}
                           </span>
                           <span className="text-xs text-zinc-400 font-medium">
-                            Outcome: <span className={trade.outcome.title === "Yes" ? "text-lime-400" : "text-red-400"}>
-                              {trade.outcome.title}
+                            Outcome: <span className={trade.outcome?.title === "Yes" ? "text-lime-400" : "text-red-400"}>
+                              {trade.outcome?.title || "Unknown"}
                             </span>
                           </span>
                         </div>

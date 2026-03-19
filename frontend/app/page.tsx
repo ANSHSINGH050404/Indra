@@ -79,13 +79,13 @@ export default function Home() {
   }, [isLoggedIn, debouncedQuery, category, status, sortKey]);
 
   
-  if (!isLoggedIn) return null;
-
-  const fullname = typeof window !== "undefined" ? localStorage.getItem("fullname") : "";
-
   const filtersActive = useMemo(() => {
     return !!debouncedQuery.trim() || category !== "all" || status !== "all" || sortKey !== "newest";
   }, [debouncedQuery, category, status, sortKey]);
+
+  if (!isLoggedIn) return null;
+
+  const fullname = typeof window !== "undefined" ? localStorage.getItem("fullname") : "";
 
   const resetFilters = () => {
     setQuery("");

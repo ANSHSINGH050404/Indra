@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import Navbar from "@/components/Navbar";
+
 
 interface UserProfile {
   id: number;
@@ -87,7 +87,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#080a10] text-white">
-      <Navbar />
       <div className="max-w-5xl mx-auto p-6 md:p-12 pt-24">
         
         <div className="bg-[#111318] rounded-[40px] border border-white/5 overflow-hidden mb-12">

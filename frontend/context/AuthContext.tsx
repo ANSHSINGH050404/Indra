@@ -26,6 +26,7 @@ interface AuthContextType {
   user: User | null;
   setUser: Dispatch<SetStateAction<User | null>>;
   refreshUser: () => Promise<void>;
+  isAuthLoaded: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -35,12 +36,14 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [isAuthLoaded, setIsAuthLoaded] = useState(false);
 
   const handleUnauthorized = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("fullname");
     setUser(null);
     setIsLoggedIn(false);
+    setIsAuthLoaded(true);
     toast.error("Session expired. Please log in again.");
   };
 
@@ -49,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!token) {
       setUser(null);
       setIsLoggedIn(false);
+      setIsAuthLoaded(true);
       return;
     }
     try {
@@ -58,6 +62,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Failed to fetch user:", error);
       handleUnauthorized();
+    } finally {
+      setIsAuthLoaded(true);
     }
   };
 
@@ -77,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, user, setUser, refreshUser }}>
+    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn, user, setUser, refreshUser, isAuthLoaded }}>
       {children}
     </AuthContext.Provider>
   );

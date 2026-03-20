@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createTrade } from "@/services/trade";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -109,21 +110,36 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
   const noP  = 100 - yesP;
 
   const handleTrade = async () => {
-    const outcome = pick === "yes" ? yesOutcome : noOutcome;
-    if (!outcome) return;
+    console.log("handleTrade called with pick:", pick, "outcomes:", market.outcomes);
+    const outcome = pick === "yes" 
+      ? market.outcomes?.find(o => o.title.toUpperCase() === "YES") 
+      : market.outcomes?.find(o => o.title.toUpperCase() === "NO");
+    
+    if (!outcome) {
+      console.error("Outcome not found for pick:", pick);
+      toast.error(`Error: ${pick?.toUpperCase()} outcome data missing.`);
+      return;
+    }
 
     setLoading(true);
     setStatus(null);
+    const toastId = toast.loading("Executing trade...");
     try {
-      await createTrade(outcome.id, amount, "BUY");
+      console.log("Executing trade for outcomeId:", outcome.id, "amount:", amount);
+      const res = await createTrade(outcome.id, amount, "BUY");
+      console.log("Trade success:", res);
       setStatus({ type: "success", msg: "Trade executed!" });
+      toast.success("Trade executed!", { id: toastId });
       await refreshUser();
       setTimeout(() => setStatus(null), 3000);
     } catch (err: any) {
+      console.error("Trade error:", err);
+      const msg = err.response?.data?.message || "Trade failed";
       setStatus({ 
         type: "error", 
-        msg: err.response?.data?.message || "Trade failed" 
+        msg: msg
       });
+      toast.error(msg, { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -248,15 +264,27 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
               />
             </div>
             <button
-              onClick={handleTrade}
-              disabled={loading || amount <= 0}
-              className={`w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-150
+              type="button"
+              onClick={() => {
+                console.log("Card Trade button clicked", pick, amount);
+                handleTrade();
+              }}
+              disabled={loading || !amount || amount <= 0}
+              className={`w-full py-2.5 rounded-xl text-sm font-bold tracking-wide transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer active:scale-95
                 ${pick === "yes"
                   ? "bg-emerald-500 hover:bg-emerald-400 text-zinc-900"
                   : "bg-red-500 hover:bg-red-400 text-white"}
                 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              {loading ? "Processing..." : `Buy ${pick === "yes" ? "YES" : "NO"} @ ₹${pick === "yes" ? yesP : noP}`}
+              {loading && (
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                </svg>
+              )}
+              <span>
+                {loading ? "Processing..." : `Buy ${pick === "yes" ? "YES" : "NO"} @ ₹${pick === "yes" ? yesP : noP}`}
+              </span>
             </button>
             {status && (
               <p className={`text-center text-[11px] font-medium ${status.type === "success" ? "text-emerald-400" : "text-red-400"}`}>

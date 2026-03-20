@@ -24,7 +24,7 @@ const BellIcon = () => (
 );
 
 export default function Navbar() {
-  const { isLoggedIn, setIsLoggedIn, user } = useAuth();
+  const { isLoggedIn, setIsLoggedIn, user, isAuthLoaded } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [fullname, setFullname] = useState("");
@@ -84,7 +84,9 @@ export default function Navbar() {
 
         {/* Right Side: Auth & User */}
         <div className="flex items-center gap-4">
-          {isLoggedIn ? (
+          {!isAuthLoaded ? (
+            <div className="w-20 h-8 bg-white/5 animate-pulse rounded-xl" />
+          ) : isLoggedIn ? (
             <>
               {/* Notification & Balance (Polymarket Style) */}
               <div className="hidden sm:flex items-center gap-4 pr-4 border-r border-white/10">

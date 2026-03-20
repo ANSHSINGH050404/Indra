@@ -110,13 +110,18 @@ export default function MarketDetailPage() {
 
     setTradeLoading(true);
     setStatus(null);
+    const toastId = toast.loading(`${tradeType === "BUY" ? "Buying" : "Selling"} shares...`);
     try {
       if (tradeType === "BUY") {
         await createTrade(outcome.id, amount, "BUY");
-        setStatus({ type: "success", msg: `Successfully bought ${title} shares!` });
+        const msg = `Successfully bought ${title} shares!`;
+        setStatus({ type: "success", msg });
+        toast.success(msg, { id: toastId });
       } else {
         await createTrade(outcome.id, amount, "SELL");
-        setStatus({ type: "success", msg: `Successfully sold ${amount} shares of ${title}!` });
+        const msg = `Successfully sold ${amount} shares of ${title}!`;
+        setStatus({ type: "success", msg });
+        toast.success(msg, { id: toastId });
       }
       
       await refreshUser();
@@ -129,10 +134,12 @@ export default function MarketDetailPage() {
       setMarket(marketRes.data);
       setUserPositions(posRes);
     } catch (err: any) {
+      const msg = err.response?.data?.message || "Trade failed";
       setStatus({ 
         type: "error", 
-        msg: err.response?.data?.message || "Trade failed" 
+        msg: msg
       });
+      toast.error(msg, { id: toastId });
     } finally {
       setTradeLoading(false);
     }
@@ -270,14 +277,16 @@ export default function MarketDetailPage() {
               
               <div className="flex gap-2 mb-8 bg-white/5 p-1 rounded-2xl w-fit mx-auto">
                 <button 
+                  type="button"
                   onClick={() => { setTradeType("BUY"); setAmount(100); }}
-                  className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${tradeType === "BUY" ? "bg-lime-400 text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
+                  className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${tradeType === "BUY" ? "bg-lime-400 text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
                 >
                   Buy
                 </button>
                 <button 
-                  onClick={() => { setTradeType("SELL"); setAmount(0); }}
-                  className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all ${tradeType === "SELL" ? "bg-white text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
+                  type="button"
+                  onClick={() => { setTradeType("SELL"); setAmount(100); }}
+                  className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${tradeType === "SELL" ? "bg-white text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
                 >
                   Sell
                 </button>
@@ -314,20 +323,44 @@ export default function MarketDetailPage() {
               {market.outcomes && market.outcomes.length > 0 && (
                 <div className="space-y-4">
                     <button 
-                        onClick={() => handleTrade("YES")}
-                        disabled={tradeLoading || amount <= 0 || (tradeType === "SELL" && amount > getHoldingForOutcome(market.outcomes.find(o => o.title === "YES")?.id || ""))}
-                        className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-900 font-black py-5 rounded-2xl transition-all active:scale-95 text-xl flex flex-col items-center justify-center leading-none"
+                        type="button"
+                        onClick={() => {
+                            console.log("Trade button clicked YES", amount, tradeType);
+                            handleTrade("YES");
+                        }}
+                        disabled={tradeLoading || !amount || amount <= 0 || (tradeType === "SELL" && amount > getHoldingForOutcome(market.outcomes.find(o => o.title === "YES")?.id || ""))}
+                        className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-900 font-black py-5 rounded-2xl transition-all active:scale-95 text-xl flex flex-col items-center justify-center leading-none cursor-pointer"
                     >
-                        <span>{tradeLoading ? (tradeType === "BUY" ? "Buying..." : "Selling...") : (tradeType === "BUY" ? `Buy YES` : `Sell YES`)}</span>
+                        <span className="flex items-center gap-2">
+                            {tradeLoading && (
+                                <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                </svg>
+                            )}
+                            {tradeLoading ? (tradeType === "BUY" ? "Buying..." : "Selling...") : (tradeType === "BUY" ? `Buy YES` : `Sell YES`)}
+                        </span>
                         {tradeType === "BUY" && <span className="text-[10px] mt-2 opacity-60">@ ₹{market.outcomes.find(o => o.title === "YES")?.price} per share</span>}
                     </button>
                     
                     <button 
-                        onClick={() => handleTrade("NO")}
-                        disabled={tradeLoading || amount <= 0 || (tradeType === "SELL" && amount > getHoldingForOutcome(market.outcomes.find(o => o.title === "NO")?.id || ""))}
-                        className="w-full bg-red-500 hover:bg-red-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-5 rounded-2xl transition-all active:scale-95 text-xl flex flex-col items-center justify-center leading-none"
+                        type="button"
+                        onClick={() => {
+                            console.log("Trade button clicked NO", amount, tradeType);
+                            handleTrade("NO");
+                        }}
+                        disabled={tradeLoading || !amount || amount <= 0 || (tradeType === "SELL" && amount > getHoldingForOutcome(market.outcomes.find(o => o.title === "NO")?.id || ""))}
+                        className="w-full bg-red-500 hover:bg-red-400 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black py-5 rounded-2xl transition-all active:scale-95 text-xl flex flex-col items-center justify-center leading-none cursor-pointer"
                     >
-                        <span>{tradeLoading ? (tradeType === "BUY" ? "Buying..." : "Selling...") : (tradeType === "BUY" ? `Buy NO` : `Sell NO`)}</span>
+                        <span className="flex items-center gap-2">
+                            {tradeLoading && (
+                                <svg className="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                                </svg>
+                            )}
+                            {tradeLoading ? (tradeType === "BUY" ? "Buying..." : "Selling...") : (tradeType === "BUY" ? `Buy NO` : `Sell NO`)}
+                        </span>
                         {tradeType === "BUY" && <span className="text-[10px] mt-2 opacity-60">@ ₹{market.outcomes.find(o => o.title === "NO")?.price} per share</span>}
                     </button>
                 </div>

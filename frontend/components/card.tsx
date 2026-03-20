@@ -103,6 +103,7 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
 
   if (!market) return null;
 
+  const isExpired = new Date(market.expiresAt) < new Date();
   const meta = CATEGORY_META[market.category] ?? CATEGORY_META.default;
   const yesOutcome = market.outcomes?.find(o => o.title === "YES");
   const noOutcome = market.outcomes?.find(o => o.title === "NO");
@@ -201,9 +202,10 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setPick(pick === "yes" ? null : "yes")}
-            onKeyDown={(e) => e.key === "Enter" && setPick(pick === "yes" ? null : "yes")}
-            className={`cursor-pointer rounded-xl border p-3 transition-all duration-200
+            onClick={() => !isExpired && setPick(pick === "yes" ? null : "yes")}
+            onKeyDown={(e) => !isExpired && e.key === "Enter" && setPick(pick === "yes" ? null : "yes")}
+            className={`rounded-xl border p-3 transition-all duration-200
+              ${isExpired ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
               ${pick === "yes"
                 ? "border-emerald-500/40 bg-emerald-500/[0.06] ring-1 ring-emerald-500/20"
                 : "border-white/[0.07] hover:border-white/[0.14] bg-white/[0.02] hover:bg-white/[0.04]"}`}
@@ -227,9 +229,10 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
           <div
             role="button"
             tabIndex={0}
-            onClick={() => setPick(pick === "no" ? null : "no")}
-            onKeyDown={(e) => e.key === "Enter" && setPick(pick === "no" ? null : "no")}
-            className={`cursor-pointer rounded-xl border p-3 transition-all duration-200
+            onClick={() => !isExpired && setPick(pick === "no" ? null : "no")}
+            onKeyDown={(e) => !isExpired && e.key === "Enter" && setPick(pick === "no" ? null : "no")}
+            className={`rounded-xl border p-3 transition-all duration-200
+              ${isExpired ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
               ${pick === "no"
                 ? "border-red-500/40 bg-red-500/[0.06] ring-1 ring-red-500/20"
                 : "border-white/[0.07] hover:border-white/[0.14] bg-white/[0.02] hover:bg-white/[0.04]"}`}
@@ -306,8 +309,8 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
           </span>
           <span className="w-px h-3 bg-white/[0.1]" />
           <span className="flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            {market.status}
+            <span className={`w-1.5 h-1.5 rounded-full ${isExpired ? "bg-amber-400" : "bg-emerald-400 animate-pulse"}`} />
+            {isExpired ? "Expired" : market.status}
           </span>
         </div>
 

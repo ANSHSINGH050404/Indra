@@ -178,6 +178,8 @@ export default function MarketDetailPage() {
     return pos ? pos.shares : 0;
   };
 
+  const isExpired = market && new Date(market.expiresAt) < new Date();
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#080a10] flex items-center justify-center text-white">
@@ -350,30 +352,49 @@ export default function MarketDetailPage() {
           {/* Side Trading Panel */}
           <div className="lg:col-span-1">
             <div className="bg-[#111318] border border-white/5 rounded-3xl p-8 sticky top-24">
-              <h2 className="text-xl font-bold mb-8">Place Trade</h2>
+              {isExpired ? (
+                <div className="text-center py-6">
+                  <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl font-bold mb-3 text-white">Trading Closed</h2>
+                  <p className="text-zinc-500 text-sm leading-relaxed mb-6">
+                    This market has reached its expiration time and is awaiting resolution by an Admin.
+                  </p>
+                  <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-1">Status</p>
+                    <p className="text-amber-400 font-bold">Awaiting Result</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-xl font-bold mb-8">Place Trade</h2>
 
-              <div className="flex gap-2 mb-8 bg-white/5 p-1 rounded-2xl w-fit mx-auto">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTradeType("BUY");
-                    setAmount(100);
-                  }}
-                  className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${tradeType === "BUY" ? "bg-lime-400 text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
-                >
-                  Buy
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setTradeType("SELL");
-                    setAmount(100);
-                  }}
-                  className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${tradeType === "SELL" ? "bg-white text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
-                >
-                  Sell
-                </button>
-              </div>
+                  <div className="flex gap-2 mb-8 bg-white/5 p-1 rounded-2xl w-fit mx-auto">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTradeType("BUY");
+                        setAmount(100);
+                      }}
+                      className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${tradeType === "BUY" ? "bg-lime-400 text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
+                    >
+                      Buy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTradeType("SELL");
+                        setAmount(100);
+                      }}
+                      className={`px-8 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest transition-all cursor-pointer ${tradeType === "SELL" ? "bg-white text-zinc-900 shadow-xl" : "text-zinc-500 hover:text-white"}`}
+                    >
+                      Sell
+                    </button>
+                  </div>
 
               <div className="mb-10">
                 <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-3 block text-center">
@@ -554,6 +575,8 @@ export default function MarketDetailPage() {
                   {status.msg}
                 </div>
               )}
+            </>
+          )}
 
               <div className="mt-8 bg-zinc-900/50 p-6 rounded-2xl border border-white/5">
                 <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest mb-4">

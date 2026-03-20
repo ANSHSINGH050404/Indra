@@ -26,6 +26,11 @@ export const executeTrade = async (
       throw new Error("Market is not active");
     }
 
+    // Check for expiration
+    if (new Date(market.expiresAt) < new Date()) {
+      throw new Error("Market has expired and is awaiting resolution");
+    }
+
     // 2. AMM Price Calculation
     const r_y = market.yesPool;
     const r_n = market.noPool;

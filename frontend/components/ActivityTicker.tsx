@@ -46,7 +46,7 @@ export default function ActivityTicker() {
             <span className="text-white">₹{activity.amount.toLocaleString()}</span>
             <span>on</span>
             <span className="text-zinc-300 max-w-[150px] truncate inline-block align-bottom">
-              {activity.outcome.market.title}
+              {activity.outcome?.market?.title || "Deleted Market"}
             </span>
             <span className="text-zinc-600 font-black">/</span>
           </div>
@@ -61,7 +61,7 @@ export default function ActivityTicker() {
             <span className="text-white">₹{activity.amount.toLocaleString()}</span>
             <span>on</span>
             <span className="text-zinc-300 max-w-[150px] truncate inline-block align-bottom">
-              {activity.outcome.market.title}
+              {activity.outcome?.market?.title || "Deleted Market"}
             </span>
             <span className="text-zinc-600 font-black">/</span>
           </div>

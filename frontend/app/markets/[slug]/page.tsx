@@ -131,6 +131,12 @@ export default function MarketDetailPage() {
   };
 
   const handleTrade = async (title: "YES" | "NO") => {
+    // Local check to prevent UI bypass
+    if (isExpired) {
+      toast.error("Trading is closed for this market.");
+      return;
+    }
+
     const outcome = market?.outcomes?.find((o) => o.title === title);
     if (!outcome) return;
 

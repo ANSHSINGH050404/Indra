@@ -15,6 +15,20 @@ export default function AdminDashboard() {
   const [query, setQuery] = useState("");
   const [activeTab, setActiveTab] = useState<"create" | "manage">("manage");
   
+  // Custom Modal State
+  const [modal, setModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    confirmText?: string;
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    onConfirm: () => {},
+  });
+  
   // Create Market State
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -84,30 +98,44 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleResolve = async (marketId: string, winningOutcomeId: string, outcomeTitle: string) => {
-    if (!confirm(`Resolve this market to "${outcomeTitle}"? This is permanent.`)) return;
-    
-    const toastId = toast.loading("Resolving market...");
-    try {
-      await api.post("/api/admin/markets/resolve", { marketId, winningOutcomeId });
-      toast.success("Market resolved!", { id: toastId });
-      fetchMarkets();
-    } catch (err: any) {
-      toast.error("Failed to resolve market: " + (err.response?.data?.message || err.message), { id: toastId });
-    }
+  const handleResolve = (marketId: string, winningOutcomeId: string, outcomeTitle: string) => {
+    setModal({
+      isOpen: true,
+      title: "Resolve Market",
+      message: `Are you sure you want to resolve this market to "${outcomeTitle}"? All winning shares will be converted to points and this action cannot be undone.`,
+      confirmText: `Resolve to ${outcomeTitle}`,
+      onConfirm: async () => {
+        setModal(m => ({ ...m, isOpen: false }));
+        const toastId = toast.loading("Resolving market...");
+        try {
+          await api.post("/api/admin/markets/resolve", { marketId, winningOutcomeId });
+          toast.success("Market resolved!", { id: toastId });
+          fetchMarkets();
+        } catch (err: any) {
+          toast.error("Failed to resolve market: " + (err.response?.data?.message || err.message), { id: toastId });
+        }
+      }
+    });
   };
 
-  const handleDelete = async (marketId: string) => {
-    if (!confirm("Delete this market? This will erase all trades and history.")) return;
-    
-    const toastId = toast.loading("Deleting market...");
-    try {
-      await api.delete(`/api/admin/markets/${marketId}`);
-      toast.success("Market deleted!", { id: toastId });
-      fetchMarkets();
-    } catch (err: any) {
-      toast.error("Failed to delete market: " + (err.response?.data?.message || err.message), { id: toastId });
-    }
+  const handleDelete = (marketId: string) => {
+    setModal({
+      isOpen: true,
+      title: "Confirm Deletion",
+      message: "Are you sure you want to delete this market? This will permanently erase all associated trades, positions, and price history from the platform.",
+      confirmText: "Delete Market",
+      onConfirm: async () => {
+        setModal(m => ({ ...m, isOpen: false }));
+        const toastId = toast.loading("Deleting market...");
+        try {
+          await api.delete(`/api/admin/markets/${marketId}`);
+          toast.success("Market deleted!", { id: toastId });
+          fetchMarkets();
+        } catch (err: any) {
+          toast.error("Failed to delete market: " + (err.response?.data?.message || err.message), { id: toastId });
+        }
+      }
+    });
   };
 
   const filteredMarkets = useMemo(() => {
@@ -365,6 +393,37 @@ export default function AdminDashboard() {
                   <p className="text-zinc-500 font-medium">No markets found matching your criteria.</p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Custom Confirmation Modal */}
+        {modal.isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 backdrop-blur-sm bg-black/80 animate-in fade-in duration-300">
+            <div className="bg-[#0d0f17] border border-white/10 w-full max-w-sm rounded-[2.5rem] p-8 md:p-10 shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-200">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-orange-500" />
+              
+              <h3 className="text-2xl font-black mb-4 uppercase tracking-tighter">
+                {modal.title}
+              </h3>
+              <p className="text-zinc-400 text-[11px] leading-relaxed mb-8 font-medium uppercase tracking-widest opacity-80">
+                {modal.message}
+              </p>
+              
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={modal.onConfirm}
+                  className="w-full bg-white text-zinc-900 hover:bg-zinc-200 font-black py-4 rounded-2xl transition-all active:scale-[0.98] uppercase tracking-widest text-[10px]"
+                >
+                  {modal.confirmText || "Confirm"}
+                </button>
+                <button 
+                  onClick={() => setModal({ ...modal, isOpen: false })}
+                  className="w-full bg-white/5 hover:bg-white/10 border border-white/5 text-zinc-500 hover:text-white font-black py-4 rounded-2xl transition-all uppercase tracking-widest text-[10px]"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
         )}

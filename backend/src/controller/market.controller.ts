@@ -14,11 +14,16 @@ export const getMarketPriceHistory = async (req: Request, res: Response) => {
     const history = await db.query.priceHistoryTable.findMany({
       where: eq(priceHistoryTable.marketId, market.id),
       orderBy: [asc(priceHistoryTable.timestamp)],
+    }).catch(err => {
+      console.error("Drizzle history query failed:", err);
+      return [];
     });
 
+    console.log(`Found ${history.length} history points for market ${market.id}`);
+
     // Group by outcome
-    const results = market.outcomes.map((outcome: any) => {
-      const outcomeHistory = history.filter(h => h.outcomeId === outcome.id);
+    const results = ((market as any).outcomes || []).map((outcome: any) => {
+      const outcomeHistory = (history || []).filter(h => h.outcomeId === outcome.id);
       return {
         outcomeId: outcome.id,
         outcomeTitle: outcome.title,

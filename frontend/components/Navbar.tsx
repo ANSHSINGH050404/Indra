@@ -44,6 +44,7 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Markets", href: "/" },
+    { name: "Watchlist", href: "/watchlist" },
     { name: "Portfolio", href: "/portfolio" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Activity", href: "/history" },

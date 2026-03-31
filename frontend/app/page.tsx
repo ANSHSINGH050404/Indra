@@ -3,12 +3,14 @@
 import MarketCard from "@/components/card";
 import type { Market } from "@/components/card";
 import { useAuth } from "@/context/AuthContext";
+import { useBookmarks } from "@/context/BookmarksContext";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
+  const { bookmarkIds, bookmarks, isLoaded: areBookmarksLoaded } = useBookmarks();
   const router = useRouter();
   const [markets, setMarkets] = useState<Market[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,6 +21,7 @@ export default function Home() {
   const [status, setStatus] = useState("all");
   const [sortKey, setSortKey] = useState<"newest" | "volume" | "expiring">("newest");
   const [categories, setCategories] = useState<string[]>([]);
+  const [savedOnly, setSavedOnly] = useState(false);
 
   // ✅ redirect effect
   useEffect(() => {
@@ -79,9 +82,20 @@ export default function Home() {
   }, [isLoggedIn, debouncedQuery, category, status, sortKey]);
 
   
+  const visibleMarkets = useMemo(() => {
+    if (!savedOnly) return markets;
+    return markets.filter((m) => bookmarkIds.has(m.id));
+  }, [bookmarkIds, markets, savedOnly]);
+
   const filtersActive = useMemo(() => {
-    return !!debouncedQuery.trim() || category !== "all" || status !== "all" || sortKey !== "newest";
-  }, [debouncedQuery, category, status, sortKey]);
+    return (
+      !!debouncedQuery.trim() ||
+      category !== "all" ||
+      status !== "all" ||
+      sortKey !== "newest" ||
+      savedOnly
+    );
+  }, [debouncedQuery, category, savedOnly, sortKey, status]);
 
   if (!isLoggedIn) return null;
 
@@ -93,6 +107,7 @@ export default function Home() {
     setCategory("all");
     setStatus("all");
     setSortKey("newest");
+    setSavedOnly(false);
   };
 
   return (
@@ -173,6 +188,19 @@ export default function Home() {
 
             <button
               type="button"
+              onClick={() => setSavedOnly((v) => !v)}
+              className={`py-3.5 px-5 rounded-2xl border text-sm font-bold transition-all ${
+                savedOnly
+                  ? "border-lime-400/30 bg-lime-400/10 text-lime-200 hover:bg-lime-400/15"
+                  : "border-white/[0.07] bg-white/[0.03] text-zinc-200 hover:bg-white/[0.06]"
+              }`}
+              title={savedOnly ? "Showing saved markets" : "Show only saved markets"}
+            >
+              Saved{areBookmarksLoaded ? ` (${bookmarks.length})` : ""}
+            </button>
+
+            <button
+              type="button"
               onClick={resetFilters}
               disabled={!filtersActive}
               className="py-3.5 px-5 rounded-2xl border border-white/[0.07] bg-white/[0.03] text-sm font-bold text-zinc-200 hover:bg-white/[0.06] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -182,9 +210,11 @@ export default function Home() {
           </div>
 
           <div className="mt-4 flex items-center justify-between text-xs text-zinc-500">
-            <span>{loading ? "Loading..." : `${markets.length} markets`}</span>
-            {filtersActive && !loading && markets.length === 0 && (
-              <span className="text-zinc-400">No matches. Try clearing filters.</span>
+            <span>{loading ? "Loading..." : `${visibleMarkets.length} markets`}</span>
+            {filtersActive && !loading && visibleMarkets.length === 0 && (
+              <span className="text-zinc-400">
+                {savedOnly ? "No saved markets." : "No matches. Try clearing filters."}
+              </span>
             )}
           </div>
         </div>
@@ -193,15 +223,19 @@ export default function Home() {
           <div className="text-center py-20 bg-[#111318] rounded-3xl border border-white/5">
             <p className="text-zinc-500">Loading markets...</p>
           </div>
-        ) : markets.length === 0 ? (
+        ) : visibleMarkets.length === 0 ? (
           <div className="text-center py-20 bg-[#111318] rounded-3xl border border-white/5">
             <p className="text-zinc-500">
-              {filtersActive ? "No markets match your search." : "No markets found yet."}
+              {filtersActive
+                ? savedOnly
+                  ? "No saved markets yet."
+                  : "No markets match your search."
+                : "No markets found yet."}
             </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {markets.map((market) => (
+            {visibleMarkets.map((market) => (
               <MarketCard key={market.id} market={market} />
             ))}
           </div>

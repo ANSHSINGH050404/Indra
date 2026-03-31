@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { createTrade } from "@/services/trade";
 import { useAuth } from "@/context/AuthContext";
+import { useBookmarks } from "@/context/BookmarksContext";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -95,8 +96,8 @@ interface MarketCardProps {
 
 export default function MarketCard({ market, yesProbability }: MarketCardProps) {
   const { refreshUser } = useAuth();
+  const { bookmarkIds, toggleBookmark, isLoaded } = useBookmarks();
   const [pick, setPick]   = useState<"yes" | "no" | null>(null);
-  const [saved, setSaved] = useState(false);
   const [amount, setAmount] = useState<number>(100);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; msg: string } | null>(null);
@@ -109,6 +110,7 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
   const noOutcome = market.outcomes?.find(o => o.title === "NO");
   const yesP = yesProbability ?? yesOutcome?.price ?? 50;
   const noP  = 100 - yesP;
+  const saved = isLoaded && bookmarkIds.has(market.id);
 
   const handleTrade = async () => {
     console.log("handleTrade called with pick:", pick, "outcomes:", market.outcomes);
@@ -166,7 +168,9 @@ export default function MarketCard({ market, yesProbability }: MarketCardProps) 
           </span>
 
           <button
-            onClick={() => setSaved((s) => !s)}
+            onClick={() =>
+              toggleBookmark({ id: market.id, slug: market.slug, title: market.title })
+            }
             className="w-7 h-7 rounded-lg border border-white/[0.08] bg-white/[0.03]
               hover:bg-white/[0.09] flex items-center justify-center transition-colors duration-150"
             aria-label="Bookmark"
